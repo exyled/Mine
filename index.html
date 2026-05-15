@@ -20,11 +20,7 @@ content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no
 
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 html,body{
   width:100%;
@@ -34,14 +30,6 @@ html,body{
   font-family:'Share Tech Mono',monospace;
 }
 
-body{
-  position:fixed;
-  inset:0;
-}
-
-/* =======================
-   VIDEO LAYER (BOTTOM)
-======================= */
 video{
   position:fixed;
   inset:0;
@@ -51,145 +39,11 @@ video{
   z-index:0;
 }
 
-/* =======================
-   THREE.JS CANVAS FIX
-   (CRITICAL FIX)
-======================= */
 #three-container{
   position:fixed;
   inset:0;
-  z-index:1;
+  z-index:2;
   pointer-events:none;
-}
-
-#three-container canvas{
-  position:fixed;
-  inset:0;
-  z-index:1;
-}
-
-/* =======================
-   HUD LAYER
-======================= */
-#hud{
-  position:fixed;
-  inset:0;
-  z-index:5;
-  pointer-events:none;
-}
-
-/* scanline */
-#scanline{
-  position:absolute;
-  left:0;
-  right:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,#00F5FF,transparent);
-  opacity:0.25;
-  animation:scan 4s linear infinite;
-}
-
-@keyframes scan{
-  from{ top:0; }
-  to{ top:100%; }
-}
-
-.corner{
-  position:absolute;
-  width:24px;
-  height:24px;
-  border:2px solid #00F5FF;
-  opacity:0.65;
-}
-
-.tl{ top:10px; left:10px; border-right:none; border-bottom:none; }
-.tr{ top:10px; right:10px; border-left:none; border-bottom:none; }
-.bl{ bottom:80px; left:10px; border-right:none; border-top:none; }
-.br{ bottom:80px; right:10px; border-left:none; border-top:none; }
-
-#topbar{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:42px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 16px;
-  background:linear-gradient(to bottom,rgba(0,0,20,0.9),transparent);
-}
-
-.logo{
-  color:#00F5FF;
-  font-family:'Orbitron',sans-serif;
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:5px;
-  text-shadow:0 0 10px #00F5FF;
-}
-
-.status{
-  color:#00F5FF;
-  font-size:9px;
-  letter-spacing:2px;
-}
-
-/* =======================
-   START SCREEN (TOP FIX)
-======================= */
-#startScreen{
-  position:fixed;
-  inset:0;
-  z-index:9999;   /* IMPORTANT FIX */
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:28px;
-  background:#000409;
-}
-
-#title{
-  color:#00F5FF;
-  font-family:'Orbitron',sans-serif;
-  font-size:38px;
-  font-weight:900;
-  letter-spacing:10px;
-  text-shadow:0 0 20px #00F5FF;
-}
-
-#subtitle{
-  color:#00B4D8;
-  font-size:10px;
-  letter-spacing:4px;
-}
-
-#startBtn{
-  border:none;
-  background:#00F5FF;
-  color:#000;
-  padding:20px 40px;
-  font-family:'Orbitron',sans-serif;
-  font-weight:700;
-  letter-spacing:4px;
-  font-size:14px;
-  cursor:pointer;
-  box-shadow:0 0 30px rgba(0,245,255,0.6);
-  animation:pulse 2s infinite;
-}
-
-@keyframes pulse{
-  0%,100%{ box-shadow:0 0 20px rgba(0,245,255,0.4); }
-  50%{ box-shadow:0 0 40px rgba(0,245,255,1); }
-}
-
-#info{
-  color:rgba(0,245,255,0.5);
-  font-size:9px;
-  text-align:center;
-  line-height:2;
-  letter-spacing:2px;
 }
 
 </style>
@@ -197,89 +51,58 @@ video{
 
 <body>
 
-<div id="startScreen">
-  <div id="title">AIRA</div>
-  <div id="subtitle">AUGMENTED IDENTITY REALITY ARCHITECTURE</div>
-
-  <button id="startBtn">▶ START SYSTEM</button>
-
-  <div id="info">
-    ALLOW CAMERA ACCESS WHEN PROMPTED<br>
-    CHROME ANDROID RECOMMENDED
-  </div>
-</div>
-
 <video id="video" playsinline autoplay muted></video>
-
 <div id="three-container"></div>
-
-<div id="hud">
-  <div id="scanline"></div>
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
-
-  <div id="topbar">
-    <div class="logo">◈ AIRA</div>
-    <div class="status">IRUO ONLINE</div>
-  </div>
-</div>
 
 <script>
 'use strict';
 
+let scene, camera3D, renderer;
 let faceMesh;
 let video;
-let scene, camera3D, renderer, composer;
-let holoGroup, catEarL, catEarR, visor;
-let processing = false;
+
+let raycaster;
+let mouse;
+
+let startButton3D;
+let clickable = [];
+
+let holoGroup;
 
 async function loadScript(src){
-  return new Promise((resolve,reject)=>{
+  return new Promise((res,rej)=>{
     const s=document.createElement('script');
     s.src=src;
-    s.onload=resolve;
-    s.onerror=reject;
+    s.onload=res;
+    s.onerror=rej;
     document.head.appendChild(s);
   });
 }
 
-document.getElementById('startBtn')
-.addEventListener('click',startSystem);
-
+/* =========================
+   START SYSTEM
+========================= */
 async function startSystem(){
-
-  document.getElementById('startScreen').style.display='none';
 
   video=document.getElementById('video');
 
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},
-      audio:false
-    });
+  const stream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:'user'},
+    audio:false
+  });
 
-    video.srcObject=stream;
-    await video.play();
-
-  }catch(err){
-    alert('Camera failed: '+err.message);
-    return;
-  }
+  video.srcObject=stream;
+  await video.play();
 
   await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js');
 
   faceMesh=new FaceMesh({
-    locateFile:(file)=>
-      `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
   });
 
   faceMesh.setOptions({
     maxNumFaces:1,
-    refineLandmarks:true,
-    minDetectionConfidence:0.5,
-    minTrackingConfidence:0.5
+    refineLandmarks:true
   });
 
   faceMesh.onResults(onResults);
@@ -288,15 +111,15 @@ async function startSystem(){
   loop();
 }
 
+/* =========================
+   THREE INIT
+========================= */
 function initThree(){
 
   scene=new THREE.Scene();
 
   camera3D=new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    1000
+    45,window.innerWidth/window.innerHeight,0.1,1000
   );
 
   camera3D.position.z=5;
@@ -307,74 +130,113 @@ function initThree(){
   });
 
   renderer.setSize(window.innerWidth,window.innerHeight);
+  document.getElementById('three-container').appendChild(renderer.domElement);
 
-  document.getElementById('three-container')
-  .appendChild(renderer.domElement);
-
-  composer=new THREE.EffectComposer(renderer);
-  composer.addPass(new THREE.RenderPass(scene,camera3D));
+  raycaster=new THREE.Raycaster();
+  mouse=new THREE.Vector2();
 
   holoGroup=new THREE.Group();
   scene.add(holoGroup);
 
-  const mat=new THREE.MeshBasicMaterial({
-    color:0x00F5FF,
-    transparent:true,
-    opacity:0.75,
-    blending:THREE.AdditiveBlending
-  });
-
-  const geo=new THREE.ConeGeometry(0.35,0.8,4);
-
-  catEarL=new THREE.Mesh(geo,mat);
-  catEarR=new THREE.Mesh(geo,mat);
-
-  holoGroup.add(catEarL);
-  holoGroup.add(catEarR);
-
-  const visorGeo=new THREE.BoxGeometry(2.4,0.4,0.05);
-
-  visor=new THREE.Mesh(
-    visorGeo,
-    new THREE.MeshBasicMaterial({
-      color:0xFF1493,
-      transparent:true,
-      opacity:0.35,
-      blending:THREE.AdditiveBlending
-    })
-  );
-
-  holoGroup.add(visor);
+  createFloatingButton();
 
   animate();
+
+  window.addEventListener('click',onClick);
 }
 
+/* =========================
+   3D FLOATING BUTTON
+========================= */
+function createFloatingButton(){
+
+  const canvas=document.createElement('canvas');
+  canvas.width=512;
+  canvas.height=128;
+
+  const ctx=canvas.getContext('2d');
+
+  ctx.fillStyle='#00F5FF';
+  ctx.shadowColor='#00F5FF';
+  ctx.shadowBlur=25;
+  ctx.fillRect(0,0,512,128);
+
+  ctx.fillStyle='#000';
+  ctx.font='bold 42px Orbitron';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('START SYSTEM',256,64);
+
+  const tex=new THREE.CanvasTexture(canvas);
+
+  const mat=new THREE.SpriteMaterial({
+    map:tex,
+    transparent:true
+  });
+
+  startButton3D=new THREE.Sprite(mat);
+
+  startButton3D.scale.set(2.5,0.7,1);
+
+  startButton3D.position.set(0,0,2);
+
+  startButton3D.userData.clickable=true;
+
+  clickable.push(startButton3D);
+
+  scene.add(startButton3D);
+}
+
+/* =========================
+   BILLBOARD UPDATE
+========================= */
 function animate(){
   requestAnimationFrame(animate);
 
-  const t=performance.now()*0.001;
-
-  catEarL.scale.y=1+Math.sin(t*3)*0.05;
-  catEarR.scale.y=1+Math.sin(t*3)*0.05;
-
-  visor.material.opacity=0.25+Math.sin(t*4)*0.08;
+  if(startButton3D){
+    startButton3D.lookAt(camera3D.position);
+  }
 
   renderer.render(scene,camera3D);
 }
 
+/* =========================
+   CLICK HANDLER
+========================= */
+function onClick(event){
+
+  mouse.x=(event.clientX/window.innerWidth)*2-1;
+  mouse.y=-(event.clientY/window.innerHeight)*2+1;
+
+  raycaster.setFromCamera(mouse,camera3D);
+
+  const hits=raycaster.intersectObjects(clickable,true);
+
+  if(hits.length>0){
+
+    const obj=hits[0].object;
+
+    if(obj.userData.clickable){
+      startSystem(); // triggers system start again safely
+      console.log("START PRESSED");
+    }
+  }
+}
+
+/* =========================
+   FACE TRACKING
+========================= */
 async function loop(){
+
   requestAnimationFrame(loop);
 
-  if(processing||!faceMesh) return;
-
-  processing=true;
-  try{
+  if(faceMesh && video){
     await faceMesh.send({image:video});
-  }catch(e){}
-  processing=false;
+  }
 }
 
 function onResults(results){
+
   if(!results.multiFaceLandmarks?.length) return;
 
   const lms=results.multiFaceLandmarks[0];
@@ -382,8 +244,8 @@ function onResults(results){
   const eyeL=lms[33];
   const eyeR=lms[263];
 
-  const midX=(eyeL.x+eyeR.x)*0.5;
-  const midY=(eyeL.y+eyeR.y)*0.5;
+  const midX=(eyeL.x+eyeR.x)/2;
+  const midY=(eyeL.y+eyeR.y)/2;
 
   holoGroup.position.set(
     (midX-0.5)*6,
@@ -392,11 +254,17 @@ function onResults(results){
   );
 }
 
+/* =========================
+   RESIZE
+========================= */
 window.addEventListener('resize',()=>{
+
   camera3D.aspect=window.innerWidth/window.innerHeight;
   camera3D.updateProjectionMatrix();
+
   renderer.setSize(window.innerWidth,window.innerHeight);
 });
+
 </script>
 
 </body>
