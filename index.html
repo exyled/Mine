@@ -548,70 +548,233 @@ function drawScan(lms,W,H){
 }
 
 /* ─────────────────────────── CAT GIRL ─────────────────────────── */
-function drawCatGirl(lms,W,H,fw,sc){
-  const eL=lp(lms,33,W,H), eR=lp(lms,263,W,H);
-  const eM=mid(eL,eR);
-  const chin=lp(lms,152,W,H), nTip=lp(lms,4,W,H);
-  const cL=lp(lms,205,W,H), cR=lp(lms,425,W,H);
-  const ang=Math.atan2(eR.y-eL.y,eR.x-eL.x);
+function drawCatGirl(lms, fw, sc) {
 
-  // Ears
-  ctx.save(); ctx.translate(eM.x,eM.y); ctx.rotate(ang);
-  catEar(ctx,-fw*.38,-fw*.70,fw*.30,sc);
-  catEar(ctx, fw*.38,-fw*.70,fw*.30,sc);
+  const eyeL = P(lms,33);
+  const eyeR = P(lms,263);
+
+  const eMid = mid(eyeL, eyeR);
+
+  const chin = P(lms,152);
+
+  const dx = eyeR.x - eyeL.x;
+  const dy = eyeR.y - eyeL.y;
+
+  const ang = Math.atan2(dy, dx);
+
+  const pulse = 0.7 + Math.sin(frame * 0.08) * 0.3;
+
+  // ─────────────────────────────
+  // HOLOGRAPHIC VISOR
+  // ─────────────────────────────
+
+  ctx.save();
+
+  ctx.translate(eMid.x, eMid.y);
+  ctx.rotate(ang);
+
+  const visorW = fw * 0.95;
+  const visorH = fw * 0.22;
+
+  const grad = ctx.createLinearGradient(
+    -visorW/2,0,
+    visorW/2,0
+  );
+
+  grad.addColorStop(0,'rgba(0,245,255,0.02)');
+  grad.addColorStop(0.5,'rgba(0,245,255,0.18)');
+  grad.addColorStop(1,'rgba(255,0,180,0.02)');
+
+  ctx.fillStyle = grad;
+
+  roundRect(
+    ctx,
+    -visorW/2,
+    -visorH/2,
+    visorW,
+    visorH,
+    12
+  );
+
+  ctx.fill();
+
+  // outline
+
+  ctx.strokeStyle = `rgba(0,245,255,${0.7 * pulse})`;
+  ctx.lineWidth = 2;
+
+  roundRect(
+    ctx,
+    -visorW/2,
+    -visorH/2,
+    visorW,
+    visorH,
+    12
+  );
+
+  ctx.stroke();
+
+  // scan lines
+
+  ctx.globalAlpha = 0.18;
+
+  for(let i=0;i<8;i++) {
+
+    const y = -visorH/2 + i*(visorH/8);
+
+    ctx.beginPath();
+    ctx.moveTo(-visorW/2,y);
+    ctx.lineTo( visorW/2,y);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+
+  // ─────────────────────────────
+  // CAT EARS
+  // ─────────────────────────────
+
+  const earSize = fw * 0.34;
+  const spread  = fw * 0.36;
+  const earY    = -(fw * 0.68);
+
+  holoEar(-spread, earY, earSize);
+  holoEar( spread, earY, earSize);
+
+  function holoEar(x,y,s) {
+
+    ctx.save();
+
+    ctx.translate(x,y);
+
+    // holographic triangle
+
+    ctx.strokeStyle = `rgba(255,0,180,${0.9 * pulse})`;
+    ctx.lineWidth = 3;
+
+    ctx.shadowColor = '#FF2D9A';
+    ctx.shadowBlur = 18;
+
+    ctx.beginPath();
+
+    ctx.moveTo(0,-s*0.2);
+    ctx.lineTo(-s*0.45,s);
+    ctx.lineTo(s*0.45,s);
+
+    ctx.closePath();
+    ctx.stroke();
+
+    // inner lines
+
+    ctx.strokeStyle = 'rgba(0,245,255,0.6)';
+    ctx.lineWidth = 1;
+
+    for(let i=1;i<=4;i++) {
+
+      const t = i/5;
+
+      ctx.beginPath();
+
+      ctx.moveTo(0,-s*0.2);
+
+      ctx.lineTo(
+        lerp(0,-s*0.45,t),
+        lerp(-s*0.2,s,t)
+      );
+
+      ctx.stroke();
+
+      ctx.beginPath();
+
+      ctx.moveTo(0,-s*0.2);
+
+      ctx.lineTo(
+        lerp(0,s*0.45,t),
+        lerp(-s*0.2,s,t)
+      );
+
+      ctx.stroke();
+    }
+
+    // anchor nodes
+
+    ctx.fillStyle = '#00F5FF';
+
+    [
+      [0,-s*0.2],
+      [-s*0.45,s],
+      [s*0.45,s]
+    ].forEach(([px,py]) => {
+
+      ctx.beginPath();
+      ctx.arc(px,py,3*sc,0,Math.PI*2);
+      ctx.fill();
+    });
+
+    ctx.restore();
+  }
+
   ctx.restore();
 
-  // Whiskers
-  ctx.save(); ctx.lineCap='round'; ctx.lineWidth=1.4*sc;
-  ctx.strokeStyle='rgba(255,255,255,0.88)';
-  [-1,0,1].forEach(i=>{
-    const off=i*6*sc, wa=i*0.14;
-    ctx.beginPath(); ctx.moveTo(cL.x,cL.y+off);
-    ctx.lineTo(cL.x-fw*.38,cL.y+off+Math.sin(wa)*12*sc); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cR.x,cR.y+off);
-    ctx.lineTo(cR.x+fw*.38,cR.y+off+Math.sin(wa)*12*sc); ctx.stroke();
-  }); ctx.restore();
+  // ─────────────────────────────
+  // FACE TRACK LABELS
+  // ─────────────────────────────
 
-  // Blush
-  ctx.save(); ctx.globalAlpha=.36+Math.sin(frame*.03)*.05; ctx.fillStyle='#FF69B4';
-  ctx.beginPath(); ctx.ellipse(cL.x-10*sc,cL.y,22*sc,11*sc,-.15,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cR.x+10*sc,cR.y,22*sc,11*sc, .15,0,Math.PI*2); ctx.fill();
-  ctx.restore();
+  ctx.font = `${10*sc}px 'Share Tech Mono'`;
 
-  // Nose
-  ctx.fillStyle='#FF1493';
-  ctx.beginPath(); ctx.arc(nTip.x,nTip.y,4.5*sc,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,0.5)';
-  ctx.beginPath(); ctx.arc(nTip.x-1.5*sc,nTip.y-1.5*sc,1.5*sc,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(0,245,255,0.8)';
 
-  // Collar + bell
-  const ny=chin.y+28*sc, cw=fw*.55, ch=14*sc;
-  ctx.save(); ctx.globalAlpha=.9; ctx.fillStyle='#FF1493';
-  ctx.shadowColor='#FF69B4'; ctx.shadowBlur=8;
-  rrect(ctx,eM.x-cw/2,ny,cw,ch,4); ctx.fill(); ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(255,255,255,0.18)';
-  rrect(ctx,eM.x-cw/2+4,ny+3,cw-8,4,2); ctx.fill();
-  const by=ny+ch+10*sc;
-  ctx.fillStyle='#FFD700'; ctx.shadowColor='#FFD700'; ctx.shadowBlur=6;
-  ctx.beginPath(); ctx.arc(eM.x,by,8*sc,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
-  ctx.strokeStyle='#B8860B'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(eM.x-6*sc,by); ctx.lineTo(eM.x+6*sc,by); ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,0.5)';
-  ctx.beginPath(); ctx.arc(eM.x-2.5*sc,by-2.5*sc,2*sc,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-}
+  ctx.fillText(
+    '[NEKOMIMI PROFILE LOADED]',
+    eMid.x - fw*0.5,
+    chin.y + fw*0.42
+  );
 
-function catEar(ctx,x,y,size,sc){
-  ctx.globalAlpha=.92; ctx.fillStyle='#FF1493';
-  ctx.shadowColor='#FF69B4'; ctx.shadowBlur=6;
-  ctx.beginPath(); ctx.moveTo(x,y);
-  ctx.lineTo(x-size*.52,y+size); ctx.lineTo(x+size*.52,y+size);
-  ctx.closePath(); ctx.fill(); ctx.shadowBlur=0;
-  ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1.5; ctx.stroke();
-  ctx.fillStyle='#FFB6C1'; ctx.globalAlpha=.85;
-  ctx.beginPath(); ctx.moveTo(x,y+size*.22);
-  ctx.lineTo(x-size*.3,y+size*.9); ctx.lineTo(x+size*.3,y+size*.9);
-  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+  // ─────────────────────────────
+  // AR TRACK POINTS
+  // ─────────────────────────────
+
+  [
+    33,263,61,291,4,10,152
+  ].forEach(i => {
+
+    const p = P(lms,i);
+
+    ctx.fillStyle = '#00F5FF';
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,2.5*sc,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(0,245,255,0.25)';
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,7*sc,0,Math.PI*2);
+    ctx.stroke();
+  });
+
+  // ─────────────────────────────
+  // DIGITAL GLITCH PASS
+  // ─────────────────────────────
+
+  if(Math.random() > 0.92) {
+
+    ctx.globalAlpha = 0.08;
+
+    ctx.drawImage(
+      canvas,
+      0,
+      Math.random()*canvas.height,
+      canvas.width,
+      8,
+      Math.random()*10-5,
+      Math.random()*canvas.height,
+      canvas.width,
+      8
+    );
+
+    ctx.globalAlpha = 1;
+  }
 }
 
 /* ─────────────────────────── BUNNY ─────────────────────────── */
