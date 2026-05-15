@@ -297,7 +297,6 @@ video{
     <div id="btns">
       <button class="cb active" data-c="none"    onclick="pick(this)"><span class="ic">🔳</span>NONE</button>
       <button class="cb"        data-c="catgirl"  onclick="pick(this)"><span class="ic">🐱</span>CAT</button>
-      <button class="cb"        data-c="catgirl2"  onclick="pick(this)"><span class="ic">🐱</span>CAT2</button>
       <button class="cb"        data-c="bunny"    onclick="pick(this)"><span class="ic">🐰</span>BUNNY</button>
       <button class="cb"        data-c="witch"    onclick="pick(this)"><span class="ic">🧙</span>WITCH</button>
       <button class="cb"        data-c="angel"    onclick="pick(this)"><span class="ic">😇</span>ANGEL</button>
@@ -520,7 +519,6 @@ function renderCostume(lms,W,H){
   const sc=fw/200;
   switch(costume){
     case 'catgirl': drawCatGirl(lms,W,H,fw,sc); break;
-    case 'catgirl2': drawCatGirl2(lms,W,H,fw,sc); break;
     case 'bunny':   drawBunny  (lms,W,H,fw,sc); break;
     case 'witch':   drawWitch  (lms,W,H,fw,sc); break;
     case 'angel':   drawAngel  (lms,W,H,fw,sc); break;
