@@ -551,152 +551,20 @@ function drawScan(lms,W,H){
 
   /* ─────────────────────────── CAT GIRL ─────────────────────────── */
 function drawCatGirl(lms, fw, sc) {
-  const eyeL = P(lms,33),  eyeR = P(lms,263);
-  const eMid  = mid(eyeL, eyeR);
-  const chin  = P(lms,152);
-  const nTip  = P(lms,4);
-  const chkL  = P(lms,205), chkR = P(lms,425);
+
+  const eyeL = P(lms,33);
+  const eyeR = P(lms,263);
+
+  const eMid = mid(eyeL, eyeR);
+
+  const chin = P(lms,152);
+
   const dx = eyeR.x - eyeL.x;
   const dy = eyeR.y - eyeL.y;
+
   const ang = Math.atan2(dy, dx);
 
-  // ── Cat Ears ──
-  ctx.save();
-  ctx.translate(eMid.x, eMid.y);
-  ctx.rotate(ang);
-
-  const earSize  = fw * 0.30;
-  const earSprd  = fw * 0.38;
-  const earY     = -(fw * 0.70);
-
-  catEar(ctx, -earSprd, earY, earSize, sc);
-  catEar(ctx,  earSprd, earY, earSize, sc);
-
-  ctx.restore();
-
-  // ── Whiskers ──
-  ctx.save();
-  ctx.lineCap    = 'round';
-  ctx.lineWidth  = 1.4 * sc;
-  ctx.strokeStyle= 'rgba(255,255,255,0.88)';
-
-  const wLen = fw * 0.38;
-  [[-0.18,0],[0,0],[0.18,0]].forEach(([a], i) => {
-    const off = (i - 1) * 6 * sc;
-    const angW= i === 0 ? 0.14 : i === 2 ? -0.14 : 0;
-    // left
-    ctx.beginPath();
-    ctx.moveTo(chkL.x, chkL.y + off);
-    ctx.lineTo(chkL.x - wLen, chkL.y + off + Math.sin(angW)*12*sc);
-    ctx.stroke();
-    // right
-    ctx.beginPath();
-    ctx.moveTo(chkR.x, chkR.y + off);
-    ctx.lineTo(chkR.x + wLen, chkR.y + off + Math.sin(angW)*12*sc);
-    ctx.stroke();
-  });
-  ctx.restore();
-
-  // ── Blush circles ──
-  ctx.save();
-  ctx.globalAlpha = 0.38 + Math.sin(frame*0.03)*0.05;
-  ctx.fillStyle   = '#FF69B4';
-  ctx.beginPath(); ctx.ellipse(chkL.x-10*sc, chkL.y, 22*sc, 11*sc, -0.15, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(chkR.x+10*sc, chkR.y, 22*sc, 11*sc,  0.15, 0, Math.PI*2); ctx.fill();
-  ctx.restore();
-
-  // ── Pink nose dot ──
-  ctx.fillStyle = '#FF69B4';
-  ctx.beginPath(); ctx.arc(nTip.x, nTip.y, 4.5*sc, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.beginPath(); ctx.arc(nTip.x-1.5*sc, nTip.y-1.5*sc, 1.5*sc, 0, Math.PI*2); ctx.fill();
-
-  // ── Pink collar ──
-  const neckY  = chin.y + 28*sc;
-  const colW   = fw * 0.55;
-  const colH   = 14*sc;
-
-  ctx.save();
-  ctx.globalAlpha = 0.88;
-  ctx.fillStyle   = '#FF1493';
-  ctx.shadowColor = '#FF69B4'; ctx.shadowBlur = 8;
-  roundRect(ctx, eMid.x - colW/2, neckY, colW, colH, 4);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Collar stripe
-  ctx.fillStyle   = 'rgba(255,255,255,0.2)';
-  roundRect(ctx, eMid.x - colW/2 + 4, neckY + 3, colW - 8, 4, 2);
-  ctx.fill();
-
-  // Bell
-  const bellY = neckY + colH + 10*sc;
-  ctx.fillStyle   = '#FFD700';
-  ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 6;
-  ctx.beginPath(); ctx.arc(eMid.x, bellY, 8*sc, 0, Math.PI*2); ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Bell line
-  ctx.strokeStyle = '#B8860B'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(eMid.x-6*sc, bellY); ctx.lineTo(eMid.x+6*sc, bellY); ctx.stroke();
-
-  // Bell shine
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.beginPath(); ctx.arc(eMid.x-2.5*sc, bellY-2.5*sc, 2*sc, 0, Math.PI*2); ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.restore();
-
-  // ── Tail indicator (text label since we can't track body) ──
-  ctx.fillStyle   = 'rgba(0,245,255,0.6)';
-  ctx.font        = `${8*sc}px 'Share Tech Mono'`;
-  ctx.fillText('[TAIL ACTIVE]', eMid.x + fw*0.55, chin.y + 10*sc);
-}
-
-function catEar(ctx, x, y, size, sc) {
-  // Outer ear
-  ctx.globalAlpha = 0.92;
-  ctx.fillStyle   = '#FF1493';
-  ctx.shadowColor = '#FF69B4'; ctx.shadowBlur = 6;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x - size*0.52, y + size);
-  ctx.lineTo(x + size*0.52, y + size);
-  ctx.closePath();
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Outline
-  ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-  ctx.lineWidth   = 1.5;
-  ctx.stroke();
-
-  // Inner ear
-  ctx.fillStyle   = '#FFB6C1';
-  ctx.globalAlpha = 0.85;
-  ctx.beginPath();
-  ctx.moveTo(x,             y + size*0.22);
-  ctx.lineTo(x - size*0.3,  y + size*0.9);
-  ctx.lineTo(x + size*0.3,  y + size*0.9);
-  ctx.closePath();
-  ctx.fill();
-  ctx.globalAlpha = 1;
-}
-/* ─────────────────────────── CAT GIRL2 ─────────────────────────── */
-function drawCatGirl2(lms, fw, sc) {
-
-  const eyeL2 = P(lms,33);
-  const eyeR2 = P(lms,263);
-
-  const eMid2 = mid(eyeL, eyeR);
-
-  const chin2 = P(lms,152);
-
-  const dx2 = eyeR.x - eyeL.x;
-  const dy2 = eyeR.y - eyeL.y;
-
-  const ang2 = Math.atan2(dy, dx);
-
-  const pulse2 = 0.7 + Math.sin(frame * 0.08) * 0.3;
+  const pulse = 0.7 + Math.sin(frame * 0.08) * 0.3;
 
   // ─────────────────────────────
   // HOLOGRAPHIC VISOR
@@ -707,8 +575,8 @@ function drawCatGirl2(lms, fw, sc) {
   ctx.translate(eMid.x, eMid.y);
   ctx.rotate(ang);
 
-  const visorW2 = fw * 0.95;
-  const visorH2 = fw * 0.22;
+  const visorW = fw * 0.95;
+  const visorH = fw * 0.22;
 
   const grad = ctx.createLinearGradient(
     -visorW/2,0,
@@ -768,14 +636,14 @@ function drawCatGirl2(lms, fw, sc) {
   // CAT EARS
   // ─────────────────────────────
 
-  const earSize2 = fw * 0.34;
-  const spread2  = fw * 0.36;
-  const earY2    = -(fw * 0.68);
+  const earSize = fw * 0.34;
+  const spread  = fw * 0.36;
+  const earY    = -(fw * 0.68);
 
-  holoEar2(-spread, earY, earSize);
-  holoEar2( spread, earY, earSize);
+  holoEar(-spread, earY, earSize);
+  holoEar( spread, earY, earSize);
 
-  function holoEar2(x,y,s) {
+  function holoEar(x,y,s) {
 
     ctx.save();
 
