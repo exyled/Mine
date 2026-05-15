@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AIRA — AR Overlay System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --cyan:   #00F5FF;
+  --cyan2:  #00B4D8;
+  --pink:   #FF2D9A;
+  --yellow: #FFE600;
+  --green:  #00FF88;
+  --bg:     #000409;
+  --panel:  rgba(0, 18, 35, 0.85);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--cyan);
+}
+
+/* ── LAYOUT ── */
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── CAMERA AREA ── */
+#camera-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+video {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0.01;
+  pointer-events: none;
+}
+
+#output {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+/* ── HUD CORNERS ── */
+.corner {
+  position: absolute;
+  width: 28px; height: 28px;
+  border: 2px solid var(--cyan);
+  pointer-events: none;
+  transition: border-color 0.4s;
+}
+.corner::before {
+  content: '';
+  position: absolute;
+  width: 6px; height: 6px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.tl::before { top: -2px; left: -2px; }
+.tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+.tr::before { top: -2px; right: -2px; }
+.bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+.bl::before { bottom: -2px; left: -2px; }
+.br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+.br::before { bottom: -2px; right: -2px; }
+
+/* ── TOP BAR ── */
+#topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: linear-gradient(to bottom, rgba(0,0,30,0.9), transparent);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.sys-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: var(--cyan);
+  text-shadow: 0 0 12px var(--cyan);
+}
+
+.sys-status {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--cyan2);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── SCAN LINE ── */
+#scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--cyan) 30%, rgba(255,255,255,0.9) 50%, var(--cyan) 70%, transparent 100%);
+  animation: sweep 4s linear infinite;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 5;
+}
+@keyframes sweep { from{top:-2px} to{top:calc(100% + 2px)} }
+
+/* ── FACE BOX INDICATOR ── */
+#face-indicator {
+  position: absolute;
+  top: 50px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  letter-spacing: 3px;
+  padding: 3px 10px;
+  border: 1px solid var(--green);
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+  box-shadow: 0 0 8px rgba(0,255,136,0.2);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+#face-indicator.on { opacity: 1; }
+
+/* ── BOTTOM PANEL ── */
+#bottom-panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 12px 14px;
+  background: linear-gradient(to top, rgba(0,0,20,0.95) 60%, transparent);
+  z-index: 10;
+}
+
+.panel-label {
+  font-size: 8px;
+  letter-spacing: 4px;
+  color: var(--cyan2);
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+#costume-grid {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cBtn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--cyan);
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+  min-width: 80px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.cBtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--cyan);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.cBtn:hover { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,245,255,0.25); }
+.cBtn.active {
+  background: rgba(0, 245, 255, 0.15);
+  border-color: var(--cyan);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(0,245,255,0.4), inset 0 0 8px rgba(0,245,255,0.1);
+  text-shadow: 0 0 8px var(--cyan);
+}
+
+.cBtn .icon { display: block; font-size: 16px; margin-bottom: 2px; }
+
+/* ── LOADING SCREEN ── */
+#loading {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  gap: 24px;
+}
+
+.load-ring {
+  position: relative;
+  width: 80px; height: 80px;
+}
+.load-ring::before, .load-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.load-ring::before {
+  border-top-color: var(--cyan);
+  border-right-color: var(--cyan);
+  animation: spin 0.8s linear infinite;
+}
+.load-ring::after {
+  inset: 8px;
+  border-bottom-color: var(--pink);
+  border-left-color: var(--pink);
+  animation: spin 1.2s linear infinite reverse;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.load-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 8px;
+  text-shadow: 0 0 20px var(--cyan);
+}
+
+#load-msg {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--cyan2);
+  min-height: 16px;
+}
+
+.load-bar-wrap {
+  width: 200px;
+  height: 2px;
+  background: rgba(0,245,255,0.1);
+  border: 1px solid rgba(0,245,255,0.2);
+}
+#load-bar {
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* ── INFO STRIP ── */
+#info-strip {
+  position: absolute;
+  top: 44px; left: 0; right: 0;
+  height: 22px;
+  background: rgba(0,0,20,0.6);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: rgba(0,245,255,0.5);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 9;
+  border-bottom: 1px solid rgba(0,245,255,0.08);
+}
+
+#info-scroll {
+  white-space: nowrap;
+  animation: marquee 20s linear infinite;
+}
+@keyframes marquee { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
+
+/* ── CAMERA ERROR ── */
+#cam-error {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #ff4466;
+  font-size: 12px;
+  letter-spacing: 2px;
+  z-index: 20;
+}
+#cam-error .err-icon { font-size: 40px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── CAMERA AREA ── -->
+  <div id="camera-wrap">
+    <video id="vid" playsinline muted autoplay></video>
+    <canvas id="output"></canvas>
+
+    <!-- HUD corners -->
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <!-- Scan line -->
+    <div id="scanline"></div>
+
+    <!-- Top bar -->
+    <div id="topbar">
+      <div class="sys-title">◈ AIRA SYS</div>
+      <div class="sys-status">
+        <span><span class="dot"></span></span>
+        <span>CAM ACTIVE</span>
+        <span id="fps-counter">-- FPS</span>
+      </div>
+    </div>
+
+    <!-- Info ticker -->
+    <div id="info-strip">
+      <div id="info-scroll">
+        AIRA AUGMENTED IDENTITY REALITY SYSTEM v2.047 &nbsp;◈&nbsp; FACE MESH ENGINE: MEDIAPIPE &nbsp;◈&nbsp; LANDMARKS: 468pt &nbsp;◈&nbsp; SELECT OVERLAY MODE BELOW &nbsp;◈&nbsp; TRACKING ACTIVE &nbsp;◈&nbsp; AIRA AUGMENTED IDENTITY REALITY SYSTEM v2.047 &nbsp;◈&nbsp;
+      </div>
+    </div>
+
+    <!-- Face detected indicator -->
+    <div id="face-indicator">◉ FACE LOCKED</div>
+
+    <!-- Camera error -->
+    <div id="cam-error">
+      <div class="err-icon">📵</div>
+      <div>CAMERA ACCESS DENIED</div>
+      <div style="font-size:9px;color:#ff88aa;letter-spacing:1px;">Please allow camera permissions and reload</div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM CONTROL PANEL ── -->
+  <div id="bottom-panel">
+    <div class="panel-label">◈ SELECT OVERLAY MODE</div>
+    <div id="costume-grid">
+      <button class="cBtn active" data-costume="none"   onclick="pick(this)"><span class="icon">🔳</span>NONE</button>
+      <button class="cBtn"        data-costume="catgirl" onclick="pick(this)"><span class="icon">🐱</span>CAT GIRL</button>
+      <button class="cBtn"        data-costume="bunny"  onclick="pick(this)"><span class="icon">🐰</span>BUNNY</button>
+      <button class="cBtn"        data-costume="witch"  onclick="pick(this)"><span class="icon">🧙</span>WITCH</button>
+      <button class="cBtn"        data-costume="angel"  onclick="pick(this)"><span class="icon">😇</span>ANGEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING OVERLAY ── -->
+<div id="loading">
+  <div class="load-ring"></div>
+  <div class="load-logo">AIRA</div>
+  <div id="load-msg">TAP TO INITIALIZE CAMERA</div>
+
+<button id="startBtn" style="
+margin-top:20px;
+padding:12px 24px;
+background:#00F5FF;
+border:none;
+color:#001018;
+font-family:'Orbitron',sans-serif;
+font-weight:bold;
+letter-spacing:2px;
+cursor:pointer;
+border-radius:4px;
+box-shadow:0 0 20px rgba(0,245,255,0.4);
+">
+START AIRA
+</button>
+  <div class="load-bar-wrap"><div id="load-bar"></div></div>
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+// ═══════════════════════════════════════════
+//  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+// ═══════════════════════════════════════════
+
+<script>
+// ═══════════════════════════════════════════
+//  AIRA — Augmented Identity Reality App
+//  Inspired by Robotics;Notes
+// ═══════════════════════════════════════════
+
+const vid    = document.getElementById('vid');
+const canvas = document.getElementById('output');
+const ctx = canvas.getContext('2d', {
+  alpha: false,
+  desynchronized: true
+});
+const loadEl = document.getElementById('loading');
+const loadMsg= document.getElementById('load-msg');
+const loadBar= document.getElementById('load-bar');
+const faceInd= document.getElementById('face-indicator');
+const fpsEl  = document.getElementById('fps-counter');
+const camErr = document.getElementById('cam-error');
+
+let costume   = 'none';
+let frame     = 0;
+let glitch    = 0;
+let lastTime  = performance.now();
+let fpsSmooth = 0;
+
+function pick(btn) {
+  document.querySelectorAll('.cBtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  costume = btn.dataset.costume;
+  glitch  = 12; // frames of glitch effect
+}
+
+// ── Loading progress sim ──────────────────
+function setLoad(pct, msg) {
+  loadBar.style.width = pct + '%';
+  loadMsg.textContent = msg;
+}
+
+// ── MediaPipe FaceMesh ────────────────────
+setLoad(10, 'LOADING FACE MESH ENGINE...');
+
+const faceMesh = new FaceMesh({
+  locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
+});
+
+faceMesh.setOptions({
+  maxNumFaces: 2,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.55,
+  minTrackingConfidence: 0.55
+});
+
+faceMesh.onResults(onResults);
+
+// ── Camera Setup (Android Chrome Fixed) ─────────────────
+
+setLoad(40, 'REQUESTING CAMERA ACCESS...');
+
+let activeStream = null;
+
+async function startCamera() {
+
+  try {
+
+    // Check support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error("getUserMedia not supported");
+    }
+
+    // Request front camera
+    activeStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: "user",
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
+
+    // IMPORTANT FOR CHROME ANDROID
+    vid.srcObject = activeStream;
+
+    // Force inline playback
+    vid.setAttribute("playsinline", true);
+    vid.muted = true;
+
+    await new Promise((resolve) => {
+  vid.onloadedmetadata = async () => {
+    try {
+      await vid.play();
+    } catch(e) {
+      console.error(e);
+    }
+    resolve();
+  };
+});
+
+    setLoad(70, 'CALIBRATING LANDMARK TRACKER...');
+
+    // Start render loop
+    async function processFrame() {
+
+      if (vid.readyState >= 2) {
+        await faceMesh.send({ image: vid });
+      }
+
+      requestAnimationFrame(processFrame);
+    }
+
+    processFrame();
+
+  } catch (err) {
+
+    console.error(err);
+
+    loadEl.style.display = 'none';
+    camErr.style.display = 'flex';
+
+    camErr.innerHTML = `
+      <div class="err-icon">📵</div>
+      <div>CAMERA ACCESS FAILED</div>
+      <div style="font-size:9px;color:#ff88aa;letter-spacing:1px;padding:0 20px;text-align:center;">
+        ${err.message}
+      </div>
+    `;
+  }
+}
+
+// Android Chrome prefers camera start from user interaction
+document.getElementById('startBtn').addEventListener('click', async () => {
+
+  const btn = document.getElementById('startBtn');
+
+  btn.disabled = true;
+  btn.textContent = 'STARTING...';
+
+  await startCamera();
+
+});
+
+// ── Landmark helpers ──────────────────────
+
+// Get canvas-space point from normalized landmark
+function P(lms, i) {
+  const l = lms[i];
+  return { x: l.x * canvas.width, y: l.y * canvas.height };
+}
+
+function mid(a, b)   { return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+function dist(a, b)  { return Math.hypot(a.x-b.x, a.y-b.y); }
+function lerp(a,b,t) { return a + (b-a)*t; }
+
+// ── Main result handler ───────────────────
+let ready = false;
+
+function onResults(res) {
+  if (!ready) {
+    ready = true;
+    setLoad(100, 'SYSTEM ONLINE');
+    setTimeout(() => { loadEl.style.display='none'; }, 600);
+  }
+
+  const W = res.image.width;
+  const H = res.image.height;
+  canvas.width  = W;
+  canvas.height = H;
+
+  // FPS
+  const now = performance.now();
+  const dt  = now - lastTime; lastTime = now;
+  fpsSmooth = fpsSmooth * 0.85 + (1000/dt) * 0.15;
+  if (frame % 10 === 0) fpsEl.textContent = Math.round(fpsSmooth) + ' FPS';
+
+  // Draw camera frame
+  ctx.save();
+  ctx.drawImage(res.image, 0, 0, W, H);
+
+  // Optional colour grade
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = 'rgba(0,10,20,0.08)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'source-over';
+
+  // Glitch flash
+  if (glitch > 0) {
+    const alpha = glitch / 12 * 0.4;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#00F5FF';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    glitch--;
+    // Scanline glitch strips
+    if (glitch > 6) {
+      for (let g = 0; g < 5; g++) {
+        const gy = Math.random() * H;
+        const gh = Math.random() * 8 + 2;
+        ctx.drawImage(res.image, 0, gy, W, gh, Math.random()*10-5, gy, W, gh);
+      }
+    }
+  }
+
+  const faces = res.multiFaceLandmarks;
+  const hasF  = faces && faces.length > 0;
+
+  faceInd.classList.toggle('on', hasF);
+
+  if (hasF) {
+    for (const lms of faces) render(lms, W, H);
+  }
+
+  // HUD overlay
+  drawHUD(W, H, hasF);
+  ctx.restore();
+  frame++;
+}
+
+// ── Costume dispatcher ────────────────────
+function render(lms, W, H) {
+  const fw = dist(P(lms,234), P(lms,454)); // face width
+  const sc = fw / 200;
+
+  switch (costume) {
+    case 'catgirl': drawCatGirl(lms, fw, sc); break;
+    case 'bunny':   drawBunny  (lms, fw, sc); break;
+    case 'witch':   drawWitch  (lms, fw, sc); break;
+    case 'angel':   drawAngel  (lms, fw, sc); break;
+    default:        drawScan   (lms, fw, sc); break;
+  }
+}
+
+// ── Face-scan overlay (NONE mode) ─────────
+function drawScan(lms, fw, sc) {
+  // Minimal cyan mesh on a few key triangles
+  const groups = [
+    [10,234,454],[33,133,362],[61,291,0],[4,1,2]
+  ];
+  ctx.strokeStyle = 'rgba(0,245,255,0.18)';
+  ctx.lineWidth   = 0.7;
+  groups.forEach(([a,b,c]) => {
+    const pa=P(lms,a), pb=P(lms,b), pc=P(lms,c);
+    ctx.beginPath();
+    ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y);
+    ctx.lineTo(pc.x,pc.y); ctx.closePath();
+    ctx.stroke();
+  });
+  // Landmark dots
+  [10,33,263,4,61,291,152,234,454].forEach(i => {
+    const p = P(lms,i);
+    ctx.fillStyle='rgba(0,245,255,0.5)';
+    ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill();
+  });
+}
+
+// ════════════════════════════════════════
+//  CAT GIRL
+// ════════════════════════════════════════
+function drawCatGirl(lms, fw, sc) {
+  const eyeL = P(lms,33),  eyeR = P(lms,263);
+  const eMid  = mid(eyeL, eyeR);
+  const chin  = P(lms,152);
+  const nTip  = P(lms,4);
+  const chkL  = P(lms,205), chkR = P(lms,425);
+  const dx = eyeR.x - eyeL.x;
+  const dy = eyeR.y - eyeL.y;
+  const ang = Math.atan2(dy, dx);
+
+  // ── Cat Ears ──
+  ctx.save();
+  ctx.translate(eMid.x, eMid.y);
+  ctx.rotate(ang);
+
+  const earSize  = fw * 0.30;
+  const earSprd  = fw * 0.38;
+  const earY     = -(fw * 0.70);
+
+  catEar(ctx, -earSprd, earY, earSize, sc);
+  catEar(ctx,  earSprd, earY, earSize, sc);
+
+  ctx.restore();
+
+  // ── Whiskers ──
+  ctx.save();
+  ctx.lineCap    = 'round';
+  ctx.lineWidth  = 1.4 * sc;
+  ctx.strokeStyle= 'rgba(255,255,255,0.88)';
+
+  const wLen = fw * 0.38;
+  [[-0.18,0],[0,0],[0.18,0]].forEach(([a], i) => {
+    const off = (i - 1) * 6 * sc;
+    const angW= i === 0 ? 0.14 : i === 2 ? -0.14 : 0;
+    // left
+    ctx.beginPath();
+    ctx.moveTo(chkL.x, chkL.y + off);
+    ctx.lineTo(chkL.x - wLen, chkL.y + off + Math.sin(angW)*12*sc);
+    ctx.stroke();
+    // right
+    ctx.beginPath();
+    ctx.moveTo(chkR.x, chkR.y + off);
+    ctx.lineTo(chkR.x + wLen, chkR.y + off + Math.sin(angW)*12*sc);
+    ctx.stroke();
+  });
+  ctx.restore();
+
+  // ── Blush circles ──
+  ctx.save();
+  ctx.globalAlpha = 0.38 + Math.sin(frame*0.03)*0.05;
+  ctx.fillStyle   = '#FF69B4';
+  ctx.beginPath(); ctx.ellipse(chkL.x-10*sc, chkL.y, 22*sc, 11*sc, -0.15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(chkR.x+10*sc, chkR.y, 22*sc, 11*sc,  0.15, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // ── Pink nose dot ──
+  ctx.fillStyle = '#FF69B4';
+  ctx.beginPath(); ctx.arc(nTip.x, nTip.y, 4.5*sc, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.beginPath(); ctx.arc(nTip.x-1.5*sc, nTip.y-1.5*sc, 1.5*sc, 0, Math.PI*2); ctx.fill();
+
+  // ── Pink collar ──
+  const neckY  = chin.y + 28*sc;
+  const colW   = fw * 0.55;
+  const colH   = 14*sc;
+
+  ctx.save();
+  ctx.globalAlpha = 0.88;
+  ctx.fillStyle   = '#FF1493';
+  ctx.shadowColor = '#FF69B4'; ctx.shadowBlur = 8;
+  roundRect(ctx, eMid.x - colW/2, neckY, colW, colH, 4);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Collar stripe
+  ctx.fillStyle   = 'rgba(255,255,255,0.2)';
+  roundRect(ctx, eMid.x - colW/2 + 4, neckY + 3, colW - 8, 4, 2);
+  ctx.fill();
+
+  // Bell
+  const bellY = neckY + colH + 10*sc;
+  ctx.fillStyle   = '#FFD700';
+  ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 6;
+  ctx.beginPath(); ctx.arc(eMid.x, bellY, 8*sc, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Bell line
+  ctx.strokeStyle = '#B8860B'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(eMid.x-6*sc, bellY); ctx.lineTo(eMid.x+6*sc, bellY); ctx.stroke();
+
+  // Bell shine
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.beginPath(); ctx.arc(eMid.x-2.5*sc, bellY-2.5*sc, 2*sc, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // ── Tail indicator (text label since we can't track body) ──
+  ctx.fillStyle   = 'rgba(0,245,255,0.6)';
+  ctx.font        = `${8*sc}px 'Share Tech Mono'`;
+  ctx.fillText('[TAIL ACTIVE]', eMid.x + fw*0.55, chin.y + 10*sc);
+}
+
+function catEar(ctx, x, y, size, sc) {
+  // Outer ear
+  ctx.globalAlpha = 0.92;
+  ctx.fillStyle   = '#FF1493';
+  ctx.shadowColor = '#FF69B4'; ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x - size*0.52, y + size);
+  ctx.lineTo(x + size*0.52, y + size);
+  ctx.closePath();
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Outline
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+  ctx.lineWidth   = 1.5;
+  ctx.stroke();
+
+  // Inner ear
+  ctx.fillStyle   = '#FFB6C1';
+  ctx.globalAlpha = 0.85;
+  ctx.beginPath();
+  ctx.moveTo(x,             y + size*0.22);
+  ctx.lineTo(x - size*0.3,  y + size*0.9);
+  ctx.lineTo(x + size*0.3,  y + size*0.9);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+// ════════════════════════════════════════
+//  BUNNY GIRL
+// ════════════════════════════════════════
+function drawBunny(lms, fw, sc) {
+  const eyeL = P(lms,33),  eyeR = P(lms,263);
+  const eMid  = mid(eyeL, eyeR);
+  const chin  = P(lms,152);
+  const nTip  = P(lms,4);
+  const chkL  = P(lms,205), chkR = P(lms,425);
+  const dx = eyeR.x - eyeL.x;
+  const dy = eyeR.y - eyeL.y;
+  const ang = Math.atan2(dy, dx);
+
+  // ── Bunny Ears ──
+  ctx.save();
+  ctx.translate(eMid.x, eMid.y);
+  ctx.rotate(ang);
+
+  const earW = fw * 0.13;
+  const earH = fw * 0.90;
+  const sprd = fw * 0.28;
+  const earY = -(fw * 0.45);
+
+  bunnyEar(ctx, -sprd, earY, earW, earH, -0.08);
+  bunnyEar(ctx,  sprd, earY, earW, earH,  0.08);
+  ctx.restore();
+
+  // ── Blush ──
+  ctx.globalAlpha = 0.32;
+  ctx.fillStyle   = '#FFB6C1';
+  ctx.beginPath(); ctx.ellipse(chkL.x-8*sc, chkL.y, 20*sc, 10*sc, -0.15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(chkR.x+8*sc, chkR.y, 20*sc, 10*sc,  0.15, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // ── Bunny nose ──
+  ctx.fillStyle = '#FF9999';
+  ctx.beginPath(); ctx.arc(nTip.x, nTip.y, 5*sc, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.beginPath(); ctx.arc(nTip.x-2*sc, nTip.y-2*sc, 1.8*sc, 0, Math.PI*2); ctx.fill();
+
+  // ── Bow tie ──
+  const neckY = chin.y + 22*sc;
+  bowTie(ctx, eMid.x, neckY, fw*0.22, 15*sc, '#9B59B6');
+}
+
+function bunnyEar(ctx, x, y, w, h, tilt) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(tilt);
+
+  // White outer
+  ctx.fillStyle   = '#F5F5F5';
+  ctx.globalAlpha = 0.92;
+  ctx.shadowColor = 'rgba(255,255,255,0.3)'; ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.ellipse(0, h/2, w, h/2, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Pink inner
+  ctx.fillStyle   = '#FFB6C1';
+  ctx.globalAlpha = 0.75;
+  ctx.beginPath();
+  ctx.ellipse(0, h*0.5, w*0.48, h/2*0.82, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function bowTie(ctx, cx, cy, w, h, col) {
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle   = col;
+  ctx.shadowColor = col; ctx.shadowBlur = 6;
+
+  // Left lobe
+  ctx.beginPath();
+  ctx.moveTo(cx,    cy);
+  ctx.lineTo(cx-w,  cy-h/2);
+  ctx.lineTo(cx-w,  cy+h/2);
+  ctx.closePath(); ctx.fill();
+
+  // Right lobe
+  ctx.beginPath();
+  ctx.moveTo(cx,   cy);
+  ctx.lineTo(cx+w, cy-h/2);
+  ctx.lineTo(cx+w, cy+h/2);
+  ctx.closePath(); ctx.fill();
+
+  // Knot
+  ctx.fillStyle   = '#7D3C98';
+  ctx.shadowBlur  = 0;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, w*0.2, h*0.35, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ════════════════════════════════════════
+//  WITCH
+// ════════════════════════════════════════
+function drawWitch(lms, fw, sc) {
+  const eyeL = P(lms,33), eyeR = P(lms,263);
+  const eMid  = mid(eyeL, eyeR);
+  const foreh = P(lms,10);
+  const dx = eyeR.x - eyeL.x;
+  const dy = eyeR.y - eyeL.y;
+  const ang = Math.atan2(dy, dx);
+
+  ctx.save();
+  ctx.translate(eMid.x, eMid.y);
+  ctx.rotate(ang);
+
+  const brimW = fw * 0.9;
+  const brimH = 13 * sc;
+  const hatBaseY  = -(fw * 0.30);
+  const hatH  = fw * 1.05;
+  const hatTopW = fw * 0.12;
+
+  // Hat shadow
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle   = '#000';
+  ctx.beginPath();
+  ctx.ellipse(6*sc, hatBaseY + 6*sc, brimW/2, brimH*0.7, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Brim
+  ctx.fillStyle   = '#1A0033';
+  ctx.shadowColor = '#8B5CF6'; ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.ellipse(0, hatBaseY, brimW/2, brimH, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Hat body (slightly tilted cone)
+  ctx.fillStyle = '#0D001A';
+  ctx.beginPath();
+  ctx.moveTo(-brimW*0.14, hatBaseY - 2);
+  ctx.lineTo( brimW*0.14, hatBaseY - 2);
+  ctx.lineTo( hatTopW*0.8, hatBaseY - hatH*0.55);
+  ctx.lineTo( 0,            hatBaseY - hatH);
+  ctx.lineTo(-hatTopW*0.8, hatBaseY - hatH*0.55);
+  ctx.closePath();
+  ctx.fill();
+
+  // Band
+  ctx.fillStyle   = '#8B5CF6';
+  ctx.shadowBlur  = 8;
+  ctx.fillRect(-brimW*0.13, hatBaseY - hatH*0.22, brimW*0.26, 10*sc);
+
+  // Buckle
+  ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 1.5;
+  ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 4;
+  ctx.strokeRect(-7*sc, hatBaseY - hatH*0.22 + 2, 14*sc, 7*sc);
+
+  // Hat brim highlight
+  ctx.globalAlpha = 0.2;
+  ctx.fillStyle   = '#8B5CF6';
+  ctx.beginPath();
+  ctx.ellipse(0, hatBaseY-brimH*0.3, brimW*0.48, brimH*0.5, 0, Math.PI, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur  = 0;
+
+  ctx.restore();
+
+  // Sparkle stars orbiting
+  const t = frame * 0.04;
+  const orb = [
+    { c:'#FFD700', phase:0 },
+    { c:'#FF69B4', phase:2.1 },
+    { c:'#00F5FF', phase:4.2 }
+  ];
+  const orbitCX = eMid.x;
+  const orbitCY = lerp(foreh.y, eMid.y, 0.5);
+  orb.forEach(({c, phase}) => {
+    const sx = orbitCX + Math.cos(t + phase) * fw * 0.65;
+    const sy = orbitCY + Math.sin(t + phase) * fw * 0.22;
+    const sz = (2 + Math.sin(t*2+phase)*1) * sc;
+    ctx.fillStyle = c;
+    star(ctx, sx, sy, sz, 4);
+  });
+}
+
+// ════════════════════════════════════════
+//  ANGEL
+// ════════════════════════════════════════
+function drawAngel(lms, fw, sc) {
+  const eyeL = P(lms,33), eyeR = P(lms,263);
+  const eMid  = mid(eyeL, eyeR);
+  const foreh = P(lms,10);
+  const dx = eyeR.x - eyeL.x;
+  const dy = eyeR.y - eyeL.y;
+  const ang = Math.atan2(dy, dx);
+
+  const haloR = fw * 0.36;
+  const haloCY= foreh.y - fw * 0.18;
+
+  // ── Wings (wide, ethereal) ──
+  ctx.save();
+  ctx.translate(eMid.x, lerp(foreh.y, eMid.y, 0.5));
+  ctx.rotate(ang);
+
+  const wingW = fw * 0.78;
+  const wingH = fw * 0.52;
+
+  ['left','right'].forEach(side => {
+    const sign = side === 'left' ? -1 : 1;
+    ctx.save();
+    ctx.scale(sign, 1);
+
+    // Wing glow
+    const grd = ctx.createRadialGradient(wingW*0.4, 0, 0, wingW*0.4, 0, wingW*0.5);
+    grd.addColorStop(0, 'rgba(255,255,255,0.45)');
+    grd.addColorStop(1, 'rgba(200,200,255,0)');
+    ctx.fillStyle   = grd;
+    ctx.shadowColor = 'rgba(255,255,255,0.6)'; ctx.shadowBlur = 16;
+
+    ctx.beginPath();
+    ctx.moveTo(18*sc, 0);
+    ctx.bezierCurveTo(wingW*0.35,-wingH*0.55, wingW*0.9,-wingH*0.28, wingW*0.88,wingH*0.1);
+    ctx.bezierCurveTo(wingW*0.7,  wingH*0.42, wingW*0.28,wingH*0.32, 18*sc,     wingH*0.08);
+    ctx.closePath();
+    ctx.fill();
+
+    // Feather lines
+    ctx.shadowBlur  = 0;
+    ctx.strokeStyle = 'rgba(200,220,255,0.35)';
+    ctx.lineWidth   = 1;
+    for (let i = 1; i <= 4; i++) {
+      const t2 = i / 5;
+      ctx.beginPath();
+      ctx.moveTo(18*sc + t2*wingW*0.25, 0);
+      ctx.quadraticCurveTo(wingW*(0.25+t2*0.5), -wingH*0.22, wingW*(0.35+t2*0.45), wingH*0.04);
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+  ctx.restore();
+
+  // ── Halo ──
+  ctx.save();
+  ctx.translate(eMid.x, haloCY);
+  ctx.rotate(ang);
+
+  // Halo glow aura
+  const grd2 = ctx.createRadialGradient(0, 0, haloR*0.5, 0, 0, haloR*1.4);
+  grd2.addColorStop(0, 'rgba(255,220,50,0)');
+  grd2.addColorStop(0.5,'rgba(255,220,50,0.2)');
+  grd2.addColorStop(1, 'rgba(255,220,50,0)');
+  ctx.fillStyle = grd2;
+  ctx.beginPath(); ctx.ellipse(0, 0, haloR*1.4, haloR*0.5, 0, 0, Math.PI*2); ctx.fill();
+
+  // Halo ring
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth   = 5*sc;
+  ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 18;
+  ctx.beginPath(); ctx.ellipse(0, 0, haloR, haloR*0.27, 0, 0, Math.PI*2); ctx.stroke();
+  ctx.shadowBlur  = 0;
+  ctx.restore();
+
+  // Sparkles orbiting halo
+  const t = frame * 0.045;
+  for (let i = 0; i < 6; i++) {
+    const a = t + i * Math.PI / 3;
+    const px = eMid.x + Math.cos(a) * haloR;
+    const py = haloCY  + Math.sin(a) * haloR * 0.27;
+    const sz = (1.2 + Math.sin(t*3+i)*0.6) * 3 * sc;
+    ctx.fillStyle   = '#FFD700';
+    ctx.globalAlpha = 0.75;
+    star(ctx, px, py, sz, 4);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ── HUD overlays drawn on top ─────────────
+function drawHUD(W, H, hasF) {
+  const fsz = Math.max(9, W * 0.016);
+  ctx.font  = `${fsz}px 'Share Tech Mono'`;
+
+  // Bottom-left readout
+  ctx.fillStyle   = 'rgba(0,245,255,0.55)';
+  ctx.fillText(`FRAME : ${String(frame).padStart(7,'0')}`, 12, H - 28);
+  ctx.fillText(`OVERLAY: ${costume.toUpperCase()}`, 12, H - 14);
+
+  // Top-right face lock
+  const lockX = W - 110;
+  if (hasF) {
+    ctx.fillStyle = '#00FF88';
+    ctx.fillText('◉ FACE LOCKED', lockX, 68);
+  } else {
+    if (Math.sin(frame * 0.12) > 0) {
+      ctx.fillStyle = '#FF4466';
+      ctx.fillText('◎ SCANNING...', lockX, 68);
+    }
+  }
+
+  // Cross-hair center (subtle)
+  const cx = W/2, cy = H/2;
+  ctx.strokeStyle = 'rgba(0,245,255,0.1)';
+  ctx.lineWidth   = 1;
+  ctx.beginPath(); ctx.moveTo(cx-20,cy); ctx.lineTo(cx+20,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-20); ctx.lineTo(cx,cy+20); ctx.stroke();
+}
+
+// ── Utilities ─────────────────────────────
+
+function star(ctx, cx, cy, r, pts) {
+  ctx.save();
+  ctx.beginPath();
+  for (let i = 0; i < pts*2; i++) {
+    const a  = (i * Math.PI) / pts - Math.PI/2;
+    const rr = i%2===0 ? r : r*0.4;
+    ctx.lineTo(cx + Math.cos(a)*rr, cy + Math.sin(a)*rr);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+</script>
+</body>
+</html>
