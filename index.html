@@ -297,6 +297,7 @@ video{
     <div id="btns">
       <button class="cb active" data-c="none"    onclick="pick(this)"><span class="ic">🔳</span>NONE</button>
       <button class="cb"        data-c="catgirl"  onclick="pick(this)"><span class="ic">🐱</span>CAT</button>
+      <button class="cb"        data-c="catgirl2"  onclick="pick(this)"><span class="ic">🐱</span>CAT2</button>
       <button class="cb"        data-c="bunny"    onclick="pick(this)"><span class="ic">🐰</span>BUNNY</button>
       <button class="cb"        data-c="witch"    onclick="pick(this)"><span class="ic">🧙</span>WITCH</button>
       <button class="cb"        data-c="angel"    onclick="pick(this)"><span class="ic">😇</span>ANGEL</button>
@@ -519,6 +520,7 @@ function renderCostume(lms,W,H){
   const sc=fw/200;
   switch(costume){
     case 'catgirl': drawCatGirl(lms,W,H,fw,sc); break;
+    case 'catgirl2': drawCatGirl2(lms,W,H,fw,sc); break;
     case 'bunny':   drawBunny  (lms,W,H,fw,sc); break;
     case 'witch':   drawWitch  (lms,W,H,fw,sc); break;
     case 'angel':   drawAngel  (lms,W,H,fw,sc); break;
@@ -547,7 +549,7 @@ function drawScan(lms,W,H){
   });
 }
 
-/* ─────────────────────────── CAT GIRL ─────────────────────────── */
+  /* ─────────────────────────── CAT GIRL ─────────────────────────── */
 function drawCatGirl(lms, fw, sc) {
   const eyeL = P(lms,33),  eyeR = P(lms,263);
   const eMid  = mid(eyeL, eyeR);
@@ -678,6 +680,235 @@ function catEar(ctx, x, y, size, sc) {
   ctx.closePath();
   ctx.fill();
   ctx.globalAlpha = 1;
+}
+/* ─────────────────────────── CAT GIRL2 ─────────────────────────── */
+function drawCatGirl2(lms, fw, sc) {
+
+  const eyeL = P(lms,33);
+  const eyeR = P(lms,263);
+
+  const eMid = mid(eyeL, eyeR);
+
+  const chin = P(lms,152);
+
+  const dx = eyeR.x - eyeL.x;
+  const dy = eyeR.y - eyeL.y;
+
+  const ang = Math.atan2(dy, dx);
+
+  const pulse = 0.7 + Math.sin(frame * 0.08) * 0.3;
+
+  // ─────────────────────────────
+  // HOLOGRAPHIC VISOR
+  // ─────────────────────────────
+
+  ctx.save();
+
+  ctx.translate(eMid.x, eMid.y);
+  ctx.rotate(ang);
+
+  const visorW = fw * 0.95;
+  const visorH = fw * 0.22;
+
+  const grad = ctx.createLinearGradient(
+    -visorW/2,0,
+    visorW/2,0
+  );
+
+  grad.addColorStop(0,'rgba(0,245,255,0.02)');
+  grad.addColorStop(0.5,'rgba(0,245,255,0.18)');
+  grad.addColorStop(1,'rgba(255,0,180,0.02)');
+
+  ctx.fillStyle = grad;
+
+  roundRect(
+    ctx,
+    -visorW/2,
+    -visorH/2,
+    visorW,
+    visorH,
+    12
+  );
+
+  ctx.fill();
+
+  // outline
+
+  ctx.strokeStyle = `rgba(0,245,255,${0.7 * pulse})`;
+  ctx.lineWidth = 2;
+
+  roundRect(
+    ctx,
+    -visorW/2,
+    -visorH/2,
+    visorW,
+    visorH,
+    12
+  );
+
+  ctx.stroke();
+
+  // scan lines
+
+  ctx.globalAlpha = 0.18;
+
+  for(let i=0;i<8;i++) {
+
+    const y = -visorH/2 + i*(visorH/8);
+
+    ctx.beginPath();
+    ctx.moveTo(-visorW/2,y);
+    ctx.lineTo( visorW/2,y);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+
+  // ─────────────────────────────
+  // CAT EARS
+  // ─────────────────────────────
+
+  const earSize = fw * 0.34;
+  const spread  = fw * 0.36;
+  const earY    = -(fw * 0.68);
+
+  holoEar(-spread, earY, earSize);
+  holoEar( spread, earY, earSize);
+
+  function holoEar(x,y,s) {
+
+    ctx.save();
+
+    ctx.translate(x,y);
+
+    // holographic triangle
+
+    ctx.strokeStyle = `rgba(255,0,180,${0.9 * pulse})`;
+    ctx.lineWidth = 3;
+
+    ctx.shadowColor = '#FF2D9A';
+    ctx.shadowBlur = 18;
+
+    ctx.beginPath();
+
+    ctx.moveTo(0,-s*0.2);
+    ctx.lineTo(-s*0.45,s);
+    ctx.lineTo(s*0.45,s);
+
+    ctx.closePath();
+    ctx.stroke();
+
+    // inner lines
+
+    ctx.strokeStyle = 'rgba(0,245,255,0.6)';
+    ctx.lineWidth = 1;
+
+    for(let i=1;i<=4;i++) {
+
+      const t = i/5;
+
+      ctx.beginPath();
+
+      ctx.moveTo(0,-s*0.2);
+
+      ctx.lineTo(
+        lerp(0,-s*0.45,t),
+        lerp(-s*0.2,s,t)
+      );
+
+      ctx.stroke();
+
+      ctx.beginPath();
+
+      ctx.moveTo(0,-s*0.2);
+
+      ctx.lineTo(
+        lerp(0,s*0.45,t),
+        lerp(-s*0.2,s,t)
+      );
+
+      ctx.stroke();
+    }
+
+    // anchor nodes
+
+    ctx.fillStyle = '#00F5FF';
+
+    [
+      [0,-s*0.2],
+      [-s*0.45,s],
+      [s*0.45,s]
+    ].forEach(([px,py]) => {
+
+      ctx.beginPath();
+      ctx.arc(px,py,3*sc,0,Math.PI*2);
+      ctx.fill();
+    });
+
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // ─────────────────────────────
+  // FACE TRACK LABELS
+  // ─────────────────────────────
+
+  ctx.font = `${10*sc}px 'Share Tech Mono'`;
+
+  ctx.fillStyle = 'rgba(0,245,255,0.8)';
+
+  ctx.fillText(
+    '[NEKOMIMI PROFILE LOADED]',
+    eMid.x - fw*0.5,
+    chin.y + fw*0.42
+  );
+
+  // ─────────────────────────────
+  // AR TRACK POINTS
+  // ─────────────────────────────
+
+  [
+    33,263,61,291,4,10,152
+  ].forEach(i => {
+
+    const p = P(lms,i);
+
+    ctx.fillStyle = '#00F5FF';
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,2.5*sc,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(0,245,255,0.25)';
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,7*sc,0,Math.PI*2);
+    ctx.stroke();
+  });
+
+  // ─────────────────────────────
+  // DIGITAL GLITCH PASS
+  // ─────────────────────────────
+
+  if(Math.random() > 0.92) {
+
+    ctx.globalAlpha = 0.08;
+
+    ctx.drawImage(
+      canvas,
+      0,
+      Math.random()*canvas.height,
+      canvas.width,
+      8,
+      Math.random()*10-5,
+      Math.random()*canvas.height,
+      canvas.width,
+      8
+    );
+
+    ctx.globalAlpha = 1;
+  }
 }
 /* ─────────────────────────── BUNNY ─────────────────────────── */
 function drawBunny(lms,W,H,fw,sc){
