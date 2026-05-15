@@ -684,19 +684,19 @@ function catEar(ctx, x, y, size, sc) {
 /* ─────────────────────────── CAT GIRL2 ─────────────────────────── */
 function drawCatGirl2(lms, fw, sc) {
 
-  const eyeL = P(lms,33);
-  const eyeR = P(lms,263);
+  const eyeL2 = P(lms,33);
+  const eyeR2 = P(lms,263);
 
-  const eMid = mid(eyeL, eyeR);
+  const eMid2 = mid(eyeL, eyeR);
 
-  const chin = P(lms,152);
+  const chin2 = P(lms,152);
 
-  const dx = eyeR.x - eyeL.x;
-  const dy = eyeR.y - eyeL.y;
+  const dx2 = eyeR.x - eyeL.x;
+  const dy2 = eyeR.y - eyeL.y;
 
-  const ang = Math.atan2(dy, dx);
+  const ang2 = Math.atan2(dy, dx);
 
-  const pulse = 0.7 + Math.sin(frame * 0.08) * 0.3;
+  const pulse2 = 0.7 + Math.sin(frame * 0.08) * 0.3;
 
   // ─────────────────────────────
   // HOLOGRAPHIC VISOR
@@ -707,8 +707,8 @@ function drawCatGirl2(lms, fw, sc) {
   ctx.translate(eMid.x, eMid.y);
   ctx.rotate(ang);
 
-  const visorW = fw * 0.95;
-  const visorH = fw * 0.22;
+  const visorW2 = fw * 0.95;
+  const visorH2 = fw * 0.22;
 
   const grad = ctx.createLinearGradient(
     -visorW/2,0,
@@ -768,14 +768,14 @@ function drawCatGirl2(lms, fw, sc) {
   // CAT EARS
   // ─────────────────────────────
 
-  const earSize = fw * 0.34;
-  const spread  = fw * 0.36;
-  const earY    = -(fw * 0.68);
+  const earSize2 = fw * 0.34;
+  const spread2  = fw * 0.36;
+  const earY2    = -(fw * 0.68);
 
-  holoEar(-spread, earY, earSize);
-  holoEar( spread, earY, earSize);
+  holoEar2(-spread, earY, earSize);
+  holoEar2( spread, earY, earSize);
 
-  function holoEar(x,y,s) {
+  function holoEar2(x,y,s) {
 
     ctx.save();
 
