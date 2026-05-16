@@ -7,332 +7,330 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
 
-:root {
-  --cyan: #00F5FF;
-  --cyan2: #00B4D8;
-  --pink: #FF2D9A;
-  --green: #00FF88;
-  --bg: #000409;
-  --panel: rgba(0, 18, 35, 0.86);
+:root{
+  --bg:#05070c;
+  --panel:rgba(7,12,20,.86);
+  --line:rgba(135,220,255,.18);
+  --cyan:#7fe8ff;
+  --cyan2:#3ccfff;
+  --green:#45f4ad;
+  --pink:#ff79b8;
+  --gold:#f5d36c;
+  --text:#e9f9ff;
+  --shadow:rgba(0,0,0,.45);
 }
 
-* { box-sizing: border-box; }
-html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: var(--bg);
-  font-family: 'Share Tech Mono', monospace;
-  color: var(--cyan);
+*{box-sizing:border-box}
+html,body{
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  background:var(--bg);
+  font-family:'Share Tech Mono', monospace;
+  color:var(--text);
 }
 
-#app {
-  position: relative;
-  width: 100vw;
-  height: 100dvh;
-  overflow: hidden;
-  background: #000;
+#app{
+  position:relative;
+  width:100vw;
+  height:100dvh;
+  background:#000;
+  overflow:hidden;
 }
 
-#camera-wrap {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: #000;
+#camera-wrap{
+  position:absolute;
+  inset:0;
+  background:#000;
+  overflow:hidden;
 }
 
-video {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0.01;
-  pointer-events: none;
+video{
+  position:absolute;
+  width:1px;
+  height:1px;
+  opacity:.01;
+  pointer-events:none;
 }
 
-#output {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #000;
+#output{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  background:#000;
 }
 
-.corner {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  border: 2px solid var(--cyan);
-  pointer-events: none;
-  z-index: 10;
+.corner{
+  position:absolute;
+  width:30px;
+  height:30px;
+  border:2px solid rgba(127,232,255,.9);
+  pointer-events:none;
+  z-index:10;
+  filter: drop-shadow(0 0 10px rgba(127,232,255,.25));
 }
-.corner::before {
-  content: '';
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan);
+.corner::before{
+  content:'';
+  position:absolute;
+  width:6px;
+  height:6px;
+  background:var(--cyan);
+  box-shadow:0 0 10px rgba(127,232,255,.85);
 }
-.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
-.tl::before { top: -2px; left: -2px; }
-.tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
-.tr::before { top: -2px; right: -2px; }
-.bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
-.bl::before { bottom: -2px; left: -2px; }
-.br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
-.br::before { bottom: -2px; right: -2px; }
+.tl{top:10px;left:10px;border-right:none;border-bottom:none}
+.tl::before{top:-2px;left:-2px}
+.tr{top:10px;right:10px;border-left:none;border-bottom:none}
+.tr::before{top:-2px;right:-2px}
+.bl{bottom:10px;left:10px;border-right:none;border-top:none}
+.bl::before{bottom:-2px;left:-2px}
+.br{bottom:10px;right:10px;border-left:none;border-top:none}
+.br::before{bottom:-2px;right:-2px}
 
-#topbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: linear-gradient(to bottom, rgba(0,0,30,0.88), transparent);
-  z-index: 20;
-  pointer-events: none;
-}
-
-.sys-title {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 900;
-  font-size: 13px;
-  letter-spacing: 5px;
-  text-shadow: 0 0 12px var(--cyan);
+#topbar{
+  position:absolute;
+  top:0;left:0;right:0;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 18px;
+  background:linear-gradient(to bottom, rgba(7,10,20,.88), transparent);
+  z-index:20;
+  pointer-events:none;
 }
 
-.sys-status {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--cyan2);
-  display: flex;
-  gap: 16px;
-  align-items: center;
+.sys-title{
+  font-family:'Orbitron', sans-serif;
+  font-weight:900;
+  font-size:13px;
+  letter-spacing:4px;
+  color:var(--cyan);
+  text-shadow:0 0 14px rgba(127,232,255,.45);
 }
 
-.dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-  animation: blink 1.4s ease-in-out infinite;
-}
-@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
-
-#scanline {
-  position: absolute;
-  left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--cyan) 30%, rgba(255,255,255,0.9) 50%, var(--cyan) 70%, transparent 100%);
-  animation: sweep 4s linear infinite;
-  opacity: 0.2;
-  pointer-events: none;
-  z-index: 15;
-}
-@keyframes sweep { from { top: -2px; } to { top: calc(100% + 2px); } }
-
-#info-strip {
-  position: absolute;
-  top: 44px; left: 0; right: 0;
-  height: 22px;
-  background: rgba(0,0,20,0.58);
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: rgba(0,245,255,0.55);
-  overflow: hidden;
-  z-index: 19;
-  pointer-events: none;
-  border-bottom: 1px solid rgba(0,245,255,0.08);
+.sys-status{
+  font-size:9px;
+  letter-spacing:2px;
+  color:#9deeff;
+  display:flex;
+  gap:14px;
+  align-items:center;
 }
 
-#info-scroll {
-  white-space: nowrap;
-  animation: marquee 22s linear infinite;
+.dot{
+  display:inline-block;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 8px rgba(69,244,173,.85);
+  animation:blink 1.35s ease-in-out infinite;
 }
-@keyframes marquee { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.28}}
 
-#face-indicator {
-  position: absolute;
-  top: 72px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
-  letter-spacing: 3px;
-  padding: 3px 10px;
-  border: 1px solid var(--green);
-  color: var(--green);
-  text-shadow: 0 0 8px var(--green);
-  box-shadow: 0 0 8px rgba(0,255,136,0.2);
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 20;
-  pointer-events: none;
+#scanline{
+  position:absolute;
+  left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(127,232,255,.95), rgba(255,255,255,.95), rgba(127,232,255,.95), transparent);
+  opacity:.18;
+  animation:sweep 4.8s linear infinite;
+  z-index:15;
+  pointer-events:none;
 }
-#face-indicator.on { opacity: 1; }
+@keyframes sweep{from{top:-3px}to{top:calc(100% + 3px)}}
 
-#bottom-panel {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  padding: 10px 12px 14px;
-  background: linear-gradient(to top, rgba(0,0,20,0.96) 60%, transparent);
-  z-index: 20;
+#info-strip{
+  position:absolute;
+  top:48px;left:0;right:0;
+  height:22px;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  background:rgba(4,10,16,.62);
+  border-bottom:1px solid rgba(127,232,255,.08);
+  overflow:hidden;
+  z-index:19;
+  pointer-events:none;
 }
+#info-scroll{
+  white-space:nowrap;
+  color:rgba(160,240,255,.72);
+  font-size:8px;
+  letter-spacing:2px;
+  animation:marquee 24s linear infinite;
+}
+@keyframes marquee{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
 
-.panel-label {
-  font-size: 8px;
-  letter-spacing: 4px;
-  color: var(--cyan2);
-  margin-bottom: 8px;
-  padding-left: 4px;
+#face-indicator{
+  position:absolute;
+  top:74px;left:50%;
+  transform:translateX(-50%);
+  font-size:9px;
+  letter-spacing:3px;
+  padding:4px 10px;
+  border:1px solid rgba(69,244,173,.8);
+  color:var(--green);
+  text-shadow:0 0 8px rgba(69,244,173,.6);
+  opacity:0;
+  transition:opacity .2s ease;
+  z-index:20;
+  pointer-events:none;
+  background:rgba(0,10,10,.2);
 }
+#face-indicator.on{opacity:1}
 
-#costume-grid {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.cBtn {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  color: var(--cyan);
-  background: rgba(0, 245, 255, 0.05);
-  border: 1px solid rgba(0, 245, 255, 0.3);
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-transform: uppercase;
-  position: relative;
-  overflow: hidden;
-  border-radius: 2px;
-  min-width: 80px;
-  text-align: center;
-  white-space: nowrap;
-}
-.cBtn.active {
-  background: rgba(0, 245, 255, 0.16);
-  border-color: var(--cyan);
-  color: #fff;
-  box-shadow: 0 0 16px rgba(0,245,255,0.32), inset 0 0 8px rgba(0,245,255,0.08);
-  text-shadow: 0 0 8px var(--cyan);
-}
-.cBtn .icon { display:block; font-size:16px; margin-bottom:2px; }
-
-#loading {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  gap: 24px;
-  padding: 24px;
-  text-align: center;
+#bottom-panel{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  padding:12px 12px 14px;
+  background:linear-gradient(to top, rgba(4,8,16,.96) 54%, rgba(4,8,16,.42) 82%, transparent);
+  z-index:20;
 }
 
-.load-ring {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-.load-ring::before, .load-ring::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid transparent;
-}
-.load-ring::before {
-  border-top-color: var(--cyan);
-  border-right-color: var(--cyan);
-  animation: spin 0.8s linear infinite;
-}
-.load-ring::after {
-  inset: 8px;
-  border-bottom-color: var(--pink);
-  border-left-color: var(--pink);
-  animation: spin 1.2s linear infinite reverse;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.load-logo {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 900;
-  font-size: 22px;
-  letter-spacing: 8px;
-  text-shadow: 0 0 20px var(--cyan);
+.panel-label{
+  font-size:8px;
+  letter-spacing:4px;
+  color:#9ce7ff;
+  margin-bottom:8px;
+  padding-left:4px;
 }
 
-#load-msg {
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: var(--cyan2);
-  min-height: 16px;
+#costume-grid{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
 }
 
-.load-bar-wrap {
-  width: 240px;
-  height: 2px;
-  background: rgba(0,245,255,0.1);
-  border: 1px solid rgba(0,245,255,0.2);
+.cBtn{
+  appearance:none;
+  font-family:'Share Tech Mono', monospace;
+  font-size:10px;
+  letter-spacing:1.4px;
+  color:var(--cyan);
+  background:rgba(127,232,255,.05);
+  border:1px solid rgba(127,232,255,.24);
+  padding:8px 13px;
+  cursor:pointer;
+  transition:transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+  text-transform:uppercase;
+  position:relative;
+  overflow:hidden;
+  border-radius:8px;
+  min-width:80px;
+  text-align:center;
 }
-#load-bar {
-  height: 100%;
-  width: 0%;
-  background: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan);
-  transition: width 0.25s ease;
+.cBtn:active{transform:scale(.98)}
+.cBtn.active{
+  background:rgba(127,232,255,.14);
+  border-color:rgba(127,232,255,.85);
+  color:#fff;
+  box-shadow:0 0 18px rgba(127,232,255,.24), inset 0 0 10px rgba(127,232,255,.06);
+  text-shadow:0 0 10px rgba(127,232,255,.6);
 }
+.cBtn .icon{display:block;font-size:16px;margin-bottom:2px}
 
-#startBtn {
-  margin-top: 8px;
-  padding: 12px 24px;
-  background: var(--cyan);
-  border: none;
-  color: #001018;
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
-  letter-spacing: 2px;
-  cursor: pointer;
-  border-radius: 4px;
-  box-shadow: 0 0 20px rgba(0,245,255,0.4);
+#loading{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at center, rgba(16,24,36,.98), rgba(0,0,0,1));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+  gap:22px;
+  padding:24px;
+  text-align:center;
 }
-
-#cam-error {
-  position: absolute;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  color: #ff4466;
-  font-size: 12px;
-  letter-spacing: 2px;
-  z-index: 30;
-  background: rgba(0,0,0,0.82);
-  text-align: center;
-  padding: 20px;
+.load-ring{
+  position:relative;
+  width:82px;height:82px;
 }
-#cam-error .err-icon { font-size: 40px; }
+.load-ring::before,.load-ring::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:2px solid transparent;
+}
+.load-ring::before{
+  border-top-color:var(--cyan);
+  border-right-color:var(--cyan);
+  animation:spin .85s linear infinite;
+}
+.load-ring::after{
+  inset:8px;
+  border-bottom-color:var(--pink);
+  border-left-color:var(--pink);
+  animation:spin 1.2s linear infinite reverse;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-logo{
+  font-family:'Orbitron', sans-serif;
+  font-weight:900;
+  font-size:22px;
+  letter-spacing:8px;
+  color:var(--cyan);
+  text-shadow:0 0 20px rgba(127,232,255,.52);
+}
+#load-msg{
+  font-size:10px;
+  letter-spacing:3px;
+  color:#94dff7;
+  min-height:16px;
+}
+.load-bar-wrap{
+  width:min(240px, 76vw);
+  height:2px;
+  background:rgba(127,232,255,.12);
+  border:1px solid rgba(127,232,255,.22);
+}
+#load-bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg, var(--cyan), var(--green));
+  box-shadow:0 0 8px rgba(127,232,255,.85);
+  transition:width .22s ease;
+}
+#startBtn{
+  margin-top:8px;
+  padding:12px 24px;
+  background:linear-gradient(180deg, #8ef0ff, #54c9ff);
+  border:none;
+  color:#001018;
+  font-family:'Orbitron', sans-serif;
+  font-weight:700;
+  letter-spacing:2px;
+  cursor:pointer;
+  border-radius:8px;
+  box-shadow:0 0 20px rgba(127,232,255,.32);
+}
+#cam-error{
+  position:absolute;
+  inset:0;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  color:#ff6b8e;
+  font-size:12px;
+  letter-spacing:2px;
+  z-index:30;
+  background:rgba(0,0,0,.86);
+  text-align:center;
+  padding:20px;
+}
+#cam-error .err-icon{font-size:40px}
 
-@media (max-width: 480px) {
-  .sys-title { font-size: 11px; letter-spacing: 3px; }
-  .sys-status { gap: 10px; font-size: 8px; }
-  .cBtn { min-width: 74px; padding: 7px 12px; }
+@media (max-width:480px){
+  .sys-title{font-size:11px;letter-spacing:3px}
+  .sys-status{gap:10px;font-size:8px}
+  .cBtn{min-width:74px;padding:7px 12px}
 }
 </style>
 </head>
@@ -360,7 +358,7 @@ video {
 
     <div id="info-strip">
       <div id="info-scroll">
-        AIRA AUGMENTED IDENTITY REALITY SYSTEM v2.047 ◈ FACE MESH ENGINE ◈ 468 LANDMARKS ◈ SELECT OVERLAY MODE BELOW ◈ TRACKING ACTIVE ◈
+        AIRA AUGMENTED IDENTITY REALITY SYSTEM ◈ FACE MESH TRACKING ◈ REAL-TIME OUTFIT OVERLAYS ◈ SELECT COSTUME BELOW ◈ TRACKING ACTIVE ◈
       </div>
     </div>
 
@@ -369,18 +367,18 @@ video {
     <div id="cam-error">
       <div class="err-icon">📵</div>
       <div>CAMERA ACCESS FAILED</div>
-      <div id="cam-error-text" style="font-size:9px;color:#ff88aa;letter-spacing:1px;line-height:1.6;"></div>
+      <div id="cam-error-text" style="font-size:9px;color:#ff9bb4;letter-spacing:1px;line-height:1.6;"></div>
     </div>
   </div>
 
   <div id="bottom-panel">
     <div class="panel-label">◈ SELECT OVERLAY MODE</div>
     <div id="costume-grid">
-      <button class="cBtn active" data-costume="none" onclick="pick(this)"><span class="icon">🔳</span>NONE</button>
-      <button class="cBtn" data-costume="catgirl" onclick="pick(this)"><span class="icon">🐱</span>CAT GIRL</button>
-      <button class="cBtn" data-costume="bunny" onclick="pick(this)"><span class="icon">🐰</span>BUNNY</button>
-      <button class="cBtn" data-costume="witch" onclick="pick(this)"><span class="icon">🧙</span>WITCH</button>
-      <button class="cBtn" data-costume="angel" onclick="pick(this)"><span class="icon">😇</span>ANGEL</button>
+      <button class="cBtn active" data-costume="none"><span class="icon">🔳</span>NONE</button>
+      <button class="cBtn" data-costume="catgirl"><span class="icon">🐱</span>CAT GIRL</button>
+      <button class="cBtn" data-costume="bunny"><span class="icon">🐰</span>BUNNY</button>
+      <button class="cBtn" data-costume="witch"><span class="icon">🧙</span>WITCH</button>
+      <button class="cBtn" data-costume="angel"><span class="icon">😇</span>ANGEL</button>
     </div>
   </div>
 </div>
@@ -398,6 +396,7 @@ video {
 const vid = document.getElementById('vid');
 const canvas = document.getElementById('output');
 const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+
 const loadEl = document.getElementById('loading');
 const loadMsg = document.getElementById('load-msg');
 const loadBar = document.getElementById('load-bar');
@@ -414,139 +413,170 @@ let fpsSmooth = 0;
 let ready = false;
 let activeStream = null;
 let mirrorX = true;
+let lastFace = null;
+let lastFaceTs = 0;
 
-function setLoad(pct, msg) {
+function setLoad(pct, msg){
   loadBar.style.width = pct + '%';
   loadMsg.textContent = msg;
 }
 
-function pick(btn) {
-  document.querySelectorAll('.cBtn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  costume = btn.dataset.costume;
-  glitch = 10;
-}
-
-function resizeCanvas() {
+function resizeCanvas(){
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   canvas.width = Math.floor(window.innerWidth * dpr);
   canvas.height = Math.floor(window.innerHeight * dpr);
   canvas.style.width = '100%';
   canvas.style.height = '100%';
 }
-
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-function P(lms, i) {
+function P(lms, i){
   const p = lms[i];
   return {
     x: mirrorX ? (1 - p.x) * canvas.width : p.x * canvas.width,
     y: p.y * canvas.height
   };
 }
-function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
-function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
-function lerp(a, b, t) { return a + (b - a) * t; }
+function mid(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function lerp(a,b,t){ return a + (b-a) * t; }
 
-function roundRect(ctx, x, y, w, h, r) {
-  const rr = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2));
-  ctx.beginPath();
-  ctx.moveTo(x + rr, y);
-  ctx.lineTo(x + w - rr, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
-  ctx.lineTo(x + w, y + h - rr);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
-  ctx.lineTo(x + rr, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
-  ctx.lineTo(x, y + rr);
-  ctx.quadraticCurveTo(x, y, x + rr, y);
-  ctx.closePath();
+function roundRect(c, x, y, w, h, r){
+  const rr = Math.max(0, Math.min(r, Math.abs(w)/2, Math.abs(h)/2));
+  c.beginPath();
+  c.moveTo(x + rr, y);
+  c.lineTo(x + w - rr, y);
+  c.quadraticCurveTo(x + w, y, x + w, y + rr);
+  c.lineTo(x + w, y + h - rr);
+  c.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  c.lineTo(x + rr, y + h);
+  c.quadraticCurveTo(x, y + h, x, y + h - rr);
+  c.lineTo(x, y + rr);
+  c.quadraticCurveTo(x, y, x + rr, y);
+  c.closePath();
+}
+function star(c, cx, cy, r, pts){
+  c.beginPath();
+  for(let i=0;i<pts*2;i++){
+    const a = i * Math.PI / pts - Math.PI/2;
+    const rr = (i % 2 === 0) ? r : r * 0.42;
+    c.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+  }
+  c.closePath();
+  c.fill();
 }
 
-function star(ctx, cx, cy, r, pts) {
+function drawSkinHalo(x, y, rx, ry, alpha = 0.18){
+  const g = ctx.createRadialGradient(x, y, 2, x, y, Math.max(rx, ry));
+  g.addColorStop(0, `rgba(255,255,255,${alpha * 0.8})`);
+  g.addColorStop(0.35, `rgba(255,245,235,${alpha})`);
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
   ctx.beginPath();
-  for (let i = 0; i < pts * 2; i++) {
-    const a = (i * Math.PI) / pts - Math.PI / 2;
-    const rr = (i % 2 === 0) ? r : r * 0.42;
-    ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
-  }
-  ctx.closePath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
-function drawFurEar(x, y, size, tilt, accent, inner, baseShadow, ctx2) {
-  ctx2.save();
-  ctx2.translate(x, y);
-  ctx2.rotate(tilt);
+function drawTexturedEar(x, y, size, tilt, options = {}){
+  const {
+    outer = ['#8d3d49', '#d49aa4', '#2a1215'],
+    inner = '#ffccd3',
+    furLines = true,
+    realism = 1
+  } = options;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(tilt);
 
   const w = size * 0.82;
-  const h = size * 1.35;
-  const g = ctx2.createLinearGradient(0, -h * 0.15, 0, h);
-  g.addColorStop(0, accent);
-  g.addColorStop(0.65, baseShadow);
-  g.addColorStop(1, '#12080d');
+  const h = size * 1.45;
 
-  ctx2.shadowColor = 'rgba(0,0,0,0.35)';
-  ctx2.shadowBlur = 12;
+  // soft shadow behind ear
+  ctx.shadowColor = 'rgba(0,0,0,.38)';
+  ctx.shadowBlur = 14 * realism;
 
-  ctx2.fillStyle = g;
-  ctx2.beginPath();
-  ctx2.moveTo(0, -h * 0.18);
-  ctx2.lineTo(-w * 0.55, h * 0.72);
-  ctx2.lineTo(0, h * 0.96);
-  ctx2.lineTo(w * 0.55, h * 0.72);
-  ctx2.closePath();
-  ctx2.fill();
+  const g = ctx.createLinearGradient(0, -h * 0.2, 0, h);
+  g.addColorStop(0, outer[0]);
+  g.addColorStop(0.48, outer[1]);
+  g.addColorStop(1, outer[2]);
+  ctx.fillStyle = g;
 
-  ctx2.shadowBlur = 0;
-  ctx2.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx2.lineWidth = 1.25;
-  ctx2.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, -h * 0.18);
+  ctx.lineTo(-w * 0.56, h * 0.72);
+  ctx.lineTo(0, h * 0.98);
+  ctx.lineTo(w * 0.56, h * 0.72);
+  ctx.closePath();
+  ctx.fill();
 
-  const innerG = ctx2.createLinearGradient(0, 0, 0, h);
+  ctx.shadowBlur = 0;
+
+  // edge highlight
+  ctx.strokeStyle = 'rgba(255,255,255,.14)';
+  ctx.lineWidth = 1.2 * realism;
+  ctx.stroke();
+
+  // inner ear
+  const innerG = ctx.createLinearGradient(0, 0, 0, h);
   innerG.addColorStop(0, inner);
   innerG.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx2.fillStyle = innerG;
-  ctx2.globalAlpha = 0.92;
-  ctx2.beginPath();
-  ctx2.moveTo(0, h * 0.06);
-  ctx2.lineTo(-w * 0.23, h * 0.58);
-  ctx2.lineTo(0, h * 0.82);
-  ctx2.lineTo(w * 0.23, h * 0.58);
-  ctx2.closePath();
-  ctx2.fill();
+  ctx.fillStyle = innerG;
+  ctx.globalAlpha = 0.92;
+  ctx.beginPath();
+  ctx.moveTo(0, h * 0.04);
+  ctx.lineTo(-w * 0.24, h * 0.57);
+  ctx.lineTo(0, h * 0.84);
+  ctx.lineTo(w * 0.24, h * 0.57);
+  ctx.closePath();
+  ctx.fill();
 
-  ctx2.globalAlpha = 0.55;
-  ctx2.strokeStyle = 'rgba(255,255,255,0.45)';
-  ctx2.lineWidth = 1;
-  for (let i = 1; i <= 4; i++) {
-    const t = i / 5;
-    ctx2.beginPath();
-    ctx2.moveTo(0, h * 0.02);
-    ctx2.lineTo(lerp(0, -w * 0.43, t), lerp(h * 0.04, h * 0.7, t));
-    ctx2.stroke();
-    ctx2.beginPath();
-    ctx2.moveTo(0, h * 0.02);
-    ctx2.lineTo(lerp(0, w * 0.43, t), lerp(h * 0.04, h * 0.7, t));
-    ctx2.stroke();
+  // fur direction details
+  if(furLines){
+    ctx.globalAlpha = 0.34;
+    ctx.strokeStyle = 'rgba(255,255,255,.55)';
+    ctx.lineWidth = 1;
+    for(let i=1;i<=4;i++){
+      const t = i / 5;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.04);
+      ctx.lineTo(lerp(0, -w * 0.42, t), lerp(h * 0.08, h * 0.72, t));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.04);
+      ctx.lineTo(lerp(0, w * 0.42, t), lerp(h * 0.08, h * 0.72, t));
+      ctx.stroke();
+    }
   }
 
-  ctx2.restore();
+  // subtle fur texture dots
+  ctx.globalAlpha = 0.22;
+  for(let i=0;i<16;i++){
+    const t = i / 15;
+    const px = lerp(-w * 0.38, w * 0.38, (i % 2) ? t : 1 - t);
+    const py = lerp(h * 0.08, h * 0.75, t);
+    ctx.fillStyle = 'rgba(255,255,255,.45)';
+    ctx.beginPath();
+    ctx.arc(px, py, 0.8 + (i % 3) * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
 }
 
-function drawLaceBow(cx, cy, w, h, col) {
+function drawFabricBow(cx, cy, w, h, col){
   ctx.save();
   ctx.translate(cx, cy);
   const g = ctx.createLinearGradient(-w, -h, w, h);
-  g.addColorStop(0, '#ffffff');
+  g.addColorStop(0, '#fff');
   g.addColorStop(0.5, col);
-  g.addColorStop(1, '#3b1b66');
+  g.addColorStop(1, '#2f214a');
   ctx.fillStyle = g;
   ctx.shadowColor = col;
   ctx.shadowBlur = 10;
-  ctx.globalAlpha = 0.92;
 
+  ctx.globalAlpha = 0.95;
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(-w, -h * 0.62);
@@ -562,40 +592,92 @@ function drawLaceBow(cx, cy, w, h, col) {
   ctx.fill();
 
   ctx.shadowBlur = 0;
-  ctx.fillStyle = '#2a1048';
+  ctx.fillStyle = '#260f3a';
   ctx.beginPath();
-  ctx.ellipse(0, 0, w * 0.2, h * 0.28, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, w * 0.22, h * 0.3, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.globalAlpha = 0.22;
+  ctx.globalAlpha = 0.2;
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.arc(0, 0, w * 0.65, 0, Math.PI * 2);
+  ctx.arc(0, 0, w * 0.68, 0, Math.PI * 2);
   ctx.stroke();
+  ctx.restore();
+}
+
+function drawLaceCollar(cx, cy, w, h, colorA, colorB){
+  ctx.save();
+  ctx.translate(cx, cy);
+  const g = ctx.createLinearGradient(-w/2, 0, w/2, 0);
+  g.addColorStop(0, colorA);
+  g.addColorStop(.5, colorB);
+  g.addColorStop(1, colorA);
+  ctx.fillStyle = g;
+  ctx.shadowColor = 'rgba(0,0,0,.3)';
+  ctx.shadowBlur = 8;
+  roundRect(ctx, -w/2, 0, w, h, 5);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 0.24;
+  ctx.fillStyle = '#fff';
+  roundRect(ctx, -w/2 + 4, 3, w - 8, 4, 2);
+  ctx.fill();
+
+  // little lace stitches
+  ctx.globalAlpha = 0.22;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
+  for(let i=-4;i<=4;i++){
+    ctx.beginPath();
+    ctx.moveTo(i * (w/9), 0);
+    ctx.lineTo(i * (w/9) + 4, h);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBell(cx, cy, s){
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = '#ffd86b';
+  ctx.shadowColor = '#ffd86b';
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.arc(0, 0, s, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#ba8a14';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(0, 0, s * 0.72, Math.PI * 0.12, Math.PI * 0.88);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.beginPath();
+  ctx.arc(-s * 0.22, -s * 0.18, s * 0.16, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
 const faceMesh = new FaceMesh({
   locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 });
-
 faceMesh.setOptions({
   maxNumFaces: 2,
   refineLandmarks: true,
   minDetectionConfidence: 0.6,
   minTrackingConfidence: 0.6
 });
-
 faceMesh.onResults(onResults);
 
-async function startCamera() {
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+async function startCamera(){
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       throw new Error('getUserMedia is not supported in this browser.');
     }
 
-    setLoad(30, 'REQUESTING CAMERA ACCESS...');
+    setLoad(24, 'REQUESTING CAMERA ACCESS...');
     activeStream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
@@ -612,19 +694,19 @@ async function startCamera() {
 
     await new Promise((resolve, reject) => {
       vid.onloadedmetadata = async () => {
-        try {
+        try{
           await vid.play();
           resolve();
-        } catch (e) {
+        }catch(e){
           reject(e);
         }
       };
       setTimeout(() => reject(new Error('Camera start timed out.')), 12000);
     });
 
-    setLoad(65, 'CALIBRATING LANDMARK TRACKER...');
+    setLoad(66, 'CALIBRATING LANDMARK TRACKER...');
     requestAnimationFrame(processFrame);
-  } catch (err) {
+  }catch(err){
     console.error(err);
     loadEl.style.display = 'none';
     camErr.style.display = 'flex';
@@ -632,12 +714,12 @@ async function startCamera() {
   }
 }
 
-async function processFrame() {
-  try {
-    if (vid.readyState >= 2) {
+async function processFrame(){
+  try{
+    if(vid.readyState >= 2){
       await faceMesh.send({ image: vid });
     }
-  } catch (e) {
+  }catch(e){
     console.error(e);
   }
   requestAnimationFrame(processFrame);
@@ -650,11 +732,20 @@ document.getElementById('startBtn').addEventListener('click', async () => {
   await startCamera();
 });
 
-function onResults(res) {
-  if (!ready) {
+document.querySelectorAll('.cBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cBtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    costume = btn.dataset.costume;
+    glitch = 10;
+  });
+});
+
+function onResults(res){
+  if(!ready){
     ready = true;
     setLoad(100, 'SYSTEM ONLINE');
-    setTimeout(() => { loadEl.style.display = 'none'; }, 550);
+    setTimeout(() => { loadEl.style.display = 'none'; }, 500);
   }
 
   const W = canvas.width;
@@ -664,42 +755,43 @@ function onResults(res) {
   const dt = Math.max(1, now - lastTime);
   lastTime = now;
   fpsSmooth = fpsSmooth * 0.87 + (1000 / dt) * 0.13;
-  if (frame % 8 === 0) fpsEl.textContent = Math.round(fpsSmooth) + ' FPS';
+  if(frame % 8 === 0) fpsEl.textContent = Math.round(fpsSmooth) + ' FPS';
 
   ctx.save();
   ctx.clearRect(0, 0, W, H);
 
-  // Camera frame
-  if (mirrorX) {
+  // camera frame
+  if(mirrorX){
     ctx.save();
     ctx.translate(W, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(res.image, 0, 0, W, H);
     ctx.restore();
-  } else {
+  }else{
     ctx.drawImage(res.image, 0, 0, W, H);
   }
 
-  // Soft color grade
+  // subtle cinematic grade
   ctx.globalCompositeOperation = 'multiply';
-  ctx.fillStyle = 'rgba(0,12,18,0.06)';
+  ctx.fillStyle = 'rgba(0, 12, 20, 0.08)';
   ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'source-over';
 
-  if (glitch > 0) {
-    const alpha = (glitch / 10) * 0.35;
+  if(glitch > 0){
+    const alpha = (glitch / 10) * 0.3;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = '#00F5FF';
+    ctx.fillStyle = '#8ef0ff';
     ctx.fillRect(0, 0, W, H);
     ctx.globalAlpha = 1;
-    if (glitch > 6) {
-      for (let g = 0; g < 4; g++) {
+
+    if(glitch > 6){
+      for(let g=0; g<4; g++){
         const gy = Math.random() * H;
-        const gh = Math.random() * 10 + 2;
+        const gh = Math.random() * 11 + 2;
         ctx.drawImage(
           res.image,
           0, gy, W, gh,
-          Math.random() * 12 - 6, gy,
+          Math.random() * 14 - 7, gy,
           W, gh
         );
       }
@@ -711,8 +803,12 @@ function onResults(res) {
   const hasF = faces && faces.length > 0;
   faceInd.classList.toggle('on', hasF);
 
-  if (hasF) {
-    for (const lms of faces) renderCostume(lms);
+  if(hasF){
+    lastFace = faces[0];
+    lastFaceTs = performance.now();
+    for(const lms of faces) renderCostume(lms);
+  }else if(lastFace && performance.now() - lastFaceTs < 350){
+    renderCostume(lastFace);
   }
 
   drawHUD(W, H, hasF);
@@ -720,7 +816,7 @@ function onResults(res) {
   frame++;
 }
 
-function renderCostume(lms) {
+function renderCostume(lms){
   const eyeL = P(lms, 33);
   const eyeR = P(lms, 263);
   const eMid = mid(eyeL, eyeR);
@@ -729,217 +825,224 @@ function renderCostume(lms) {
   const nose = P(lms, 4);
   const cheekL = P(lms, 205);
   const cheekR = P(lms, 425);
+  const jawL = P(lms, 234);
+  const jawR = P(lms, 454);
 
-  const fw = dist(P(lms, 234), P(lms, 454));
-  const sc = Math.max(0.45, fw / 200);
+  const fw = dist(jawL, jawR);
+  const sc = Math.max(0.46, fw / 200);
   const dx = eyeR.x - eyeL.x;
   const dy = eyeR.y - eyeL.y;
   const ang = Math.atan2(dy, dx);
 
-  switch (costume) {
+  switch(costume){
     case 'catgirl':
-      drawCatGirl(lms, eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang);
+      drawCatGirl(eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang);
       break;
     case 'bunny':
-      drawBunny(lms, eMid, chin, nose, cheekL, cheekR, fw, sc, ang);
+      drawBunny(eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang);
       break;
     case 'witch':
-      drawWitch(lms, eMid, brow, fw, sc, ang);
+      drawWitch(eMid, brow, fw, sc, ang);
       break;
     case 'angel':
-      drawAngel(lms, eMid, brow, fw, sc, ang);
+      drawAngel(eMid, brow, fw, sc, ang);
       break;
     default:
-      drawScan(lms, fw, sc);
+      drawScan(jawL, jawR, brow, nose, fw, sc);
       break;
   }
 }
 
-function drawScan(lms, fw, sc) {
-  const groups = [
-    [10, 234, 454],
-    [33, 133, 362],
-    [61, 291, 0],
-    [4, 1, 2]
-  ];
-  ctx.strokeStyle = 'rgba(0,245,255,0.18)';
-  ctx.lineWidth = Math.max(0.6, 0.8 * sc);
-  groups.forEach(([a, b, c]) => {
-    const pa = P(lms, a), pb = P(lms, b), pc = P(lms, c);
+function drawScan(jawL, jawR, brow, nose, fw, sc){
+  const pts = [jawL, jawR, brow, nose];
+  ctx.save();
+  ctx.strokeStyle = 'rgba(127,232,255,.18)';
+  ctx.lineWidth = Math.max(0.7, 0.85 * sc);
+
+  ctx.beginPath();
+  ctx.moveTo(jawL.x, jawL.y);
+  ctx.lineTo(brow.x, brow.y);
+  ctx.lineTo(jawR.x, jawR.y);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(nose.x, nose.y);
+  ctx.lineTo(brow.x, brow.y);
+  ctx.stroke();
+
+  pts.forEach(p => {
+    ctx.fillStyle = 'rgba(127,232,255,.7)';
     ctx.beginPath();
-    ctx.moveTo(pa.x, pa.y);
-    ctx.lineTo(pb.x, pb.y);
-    ctx.lineTo(pc.x, pc.y);
-    ctx.closePath();
-    ctx.stroke();
-  });
-  [10, 33, 263, 4, 61, 291, 152, 234, 454].forEach(i => {
-    const p = P(lms, i);
-    ctx.fillStyle = 'rgba(0,245,255,0.55)';
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 2 * sc, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 1.8 * sc, 0, Math.PI * 2);
     ctx.fill();
   });
+  ctx.restore();
 }
 
-function drawCatGirl(lms, eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang) {
-  const earSize = fw * 0.34;
-  const earSpread = fw * 0.34;
-  const earY = brow.y - fw * 0.34;
+function drawCatGirl(eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang){
+  const earSize = fw * 0.35;
+  const earSpread = fw * 0.36;
+  const earY = brow.y - fw * 0.31;
 
-  // soft headband
+  // headband
   ctx.save();
-  ctx.translate(eMid.x, brow.y);
-  ctx.rotate(ang * 0.18);
-  const bandW = fw * 0.78;
+  ctx.translate(eMid.x, brow.y - 1);
+  ctx.rotate(ang * 0.15);
+  const bandW = fw * 0.82;
   const bandH = 11 * sc;
   const band = ctx.createLinearGradient(-bandW / 2, 0, bandW / 2, 0);
-  band.addColorStop(0, '#291018');
-  band.addColorStop(0.5, '#9d2f56');
-  band.addColorStop(1, '#240c16');
+  band.addColorStop(0, '#231117');
+  band.addColorStop(0.5, '#a54b63');
+  band.addColorStop(1, '#1a0b10');
   ctx.fillStyle = band;
   ctx.globalAlpha = 0.94;
   roundRect(ctx, -bandW / 2, -bandH / 2, bandW, bandH, 6 * sc);
   ctx.fill();
+
+  // band highlight
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = '#fff';
+  roundRect(ctx, -bandW / 2 + 3, -bandH / 2 + 2, bandW - 6, 2.5, 2);
+  ctx.fill();
   ctx.restore();
 
-  drawFurEar(eMid.x - earSpread, earY, earSize, ang - 0.16, '#8e243f', '#ffc6cf', '#3f1220', ctx);
-  drawFurEar(eMid.x + earSpread, earY, earSize, ang + 0.16, '#8e243f', '#ffc6cf', '#3f1220', ctx);
+  drawSkinHalo(eMid.x, brow.y + 8 * sc, fw * 0.62, fw * 0.76, 0.16);
 
-  // inner ear tufts
-  ctx.save();
-  ctx.globalAlpha = 0.55;
-  ctx.strokeStyle = 'rgba(255,230,235,0.8)';
-  ctx.lineWidth = Math.max(1, 1.3 * sc);
-  [ -1, 1 ].forEach(side => {
-    const px = eMid.x + side * earSpread;
-    const py = earY + earSize * 0.65;
-    for (let i = 0; i < 5; i++) {
-      ctx.beginPath();
-      ctx.moveTo(px, py - i * 2 * sc);
-      ctx.lineTo(px + side * (7 + i * 2) * sc, py - 8 * sc - i * 1.1 * sc);
-      ctx.stroke();
-    }
+  drawTexturedEar(eMid.x - earSpread, earY, earSize, ang - 0.15, {
+    outer: ['#903747', '#dfabb1', '#281015'],
+    inner: '#ffd1d8',
+    furLines: true,
+    realism: 1
   });
-  ctx.restore();
+  drawTexturedEar(eMid.x + earSpread, earY, earSize, ang + 0.15, {
+    outer: ['#903747', '#dfabb1', '#281015'],
+    inner: '#ffd1d8',
+    furLines: true,
+    realism: 1
+  });
 
-  // cheeks / blush
+  // blush
   ctx.save();
-  ctx.globalAlpha = 0.18;
-  const blush = ctx.createRadialGradient(cheekL.x, cheekL.y, 1, cheekL.x, cheekL.y, fw * 0.12);
-  blush.addColorStop(0, 'rgba(255,138,185,0.85)');
-  blush.addColorStop(1, 'rgba(255,138,185,0)');
-  ctx.fillStyle = blush;
-  ctx.beginPath(); ctx.arc(cheekL.x, cheekL.y, fw * 0.12, 0, Math.PI * 2); ctx.fill();
-  const blush2 = ctx.createRadialGradient(cheekR.x, cheekR.y, 1, cheekR.x, cheekR.y, fw * 0.12);
-  blush2.addColorStop(0, 'rgba(255,138,185,0.85)');
-  blush2.addColorStop(1, 'rgba(255,138,185,0)');
+  ctx.globalAlpha = 0.20;
+  const blush1 = ctx.createRadialGradient(cheekL.x, cheekL.y, 1, cheekL.x, cheekL.y, fw * 0.11);
+  blush1.addColorStop(0, 'rgba(255,128,171,.9)');
+  blush1.addColorStop(1, 'rgba(255,128,171,0)');
+  ctx.fillStyle = blush1;
+  ctx.beginPath(); ctx.arc(cheekL.x, cheekL.y, fw * 0.11, 0, Math.PI * 2); ctx.fill();
+
+  const blush2 = ctx.createRadialGradient(cheekR.x, cheekR.y, 1, cheekR.x, cheekR.y, fw * 0.11);
+  blush2.addColorStop(0, 'rgba(255,128,171,.9)');
+  blush2.addColorStop(1, 'rgba(255,128,171,0)');
   ctx.fillStyle = blush2;
-  ctx.beginPath(); ctx.arc(cheekR.x, cheekR.y, fw * 0.12, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cheekR.x, cheekR.y, fw * 0.11, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 
   // nose
   ctx.save();
-  ctx.fillStyle = '#ff7aa9';
-  ctx.shadowColor = '#ff7aa9';
+  ctx.fillStyle = '#ff89b5';
+  ctx.shadowColor = '#ff89b5';
   ctx.shadowBlur = 4;
   ctx.beginPath();
-  ctx.arc(nose.x, nose.y, 3.5 * sc, 0, Math.PI * 2);
+  ctx.arc(nose.x, nose.y, 3.3 * sc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // muzzle/whisker shadows for realism
+  ctx.save();
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.ellipse(nose.x, nose.y + 10 * sc, fw * 0.11, fw * 0.07, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
   // collar
-  const neckY = chin.y + 18 * sc;
-  const colW = fw * 0.56;
-  const colH = 16 * sc;
-  ctx.save();
-  const col = ctx.createLinearGradient(eMid.x - colW / 2, 0, eMid.x + colW / 2, 0);
-  col.addColorStop(0, '#5d0b2c');
-  col.addColorStop(0.4, '#f63d8a');
-  col.addColorStop(1, '#7a1439');
-  ctx.fillStyle = col;
-  ctx.shadowColor = '#ff5ca0';
-  ctx.shadowBlur = 7;
-  roundRect(ctx, eMid.x - colW / 2, neckY, colW, colH, 5 * sc);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(255,255,255,0.16)';
-  roundRect(ctx, eMid.x - colW / 2 + 4, neckY + 3, colW - 8, 4, 2);
-  ctx.fill();
+  const neckY = chin.y + 16 * sc;
+  drawLaceCollar(eMid.x, neckY, fw * 0.60, 16 * sc, '#571538', '#ff4c9c');
 
   // bell
-  const bellY = neckY + colH + 9 * sc;
-  ctx.fillStyle = '#ffd35c';
-  ctx.shadowColor = '#ffd35c';
-  ctx.shadowBlur = 7;
-  ctx.beginPath();
-  ctx.arc(eMid.x, bellY, 7.5 * sc, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = '#b8860b';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(eMid.x - 5 * sc, bellY);
-  ctx.lineTo(eMid.x + 5 * sc, bellY);
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.beginPath();
-  ctx.arc(eMid.x - 2.2 * sc, bellY - 2.2 * sc, 1.6 * sc, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  drawBell(eMid.x, neckY + 24 * sc, 7.5 * sc);
 
-  // subtle whiskers
+  // whiskers
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.strokeStyle = 'rgba(255,255,255,.78)';
   ctx.lineCap = 'round';
-  ctx.lineWidth = Math.max(1, 1.2 * sc);
-  [[-1, 0], [0, 0], [1, 0]].forEach((pair, i) => {
-    const off = (i - 1) * 5 * sc;
+  ctx.lineWidth = Math.max(1, 1.1 * sc);
+  [-1, 0, 1].forEach(i => {
+    const off = i * 5.4 * sc;
     ctx.beginPath();
     ctx.moveTo(cheekL.x, cheekL.y + off);
-    ctx.lineTo(cheekL.x - fw * 0.34, cheekL.y + off - 2 * sc);
+    ctx.lineTo(cheekL.x - fw * 0.34, cheekL.y + off - 1.5 * sc);
     ctx.stroke();
+
     ctx.beginPath();
     ctx.moveTo(cheekR.x, cheekR.y + off);
-    ctx.lineTo(cheekR.x + fw * 0.34, cheekR.y + off - 2 * sc);
+    ctx.lineTo(cheekR.x + fw * 0.34, cheekR.y + off - 1.5 * sc);
     ctx.stroke();
   });
   ctx.restore();
 
+  // subtle chest/shoulder silhouette cue
   ctx.save();
-  ctx.fillStyle = 'rgba(0,245,255,0.6)';
+  ctx.globalAlpha = 0.14;
+  const bodyGrad = ctx.createLinearGradient(eMid.x - fw * 0.25, chin.y, eMid.x + fw * 0.25, chin.y + fw * 0.45);
+  bodyGrad.addColorStop(0, 'rgba(255,255,255,0)');
+  bodyGrad.addColorStop(0.45, 'rgba(255,255,255,.6)');
+  bodyGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = bodyGrad;
+  roundRect(ctx, eMid.x - fw * 0.22, chin.y + fw * 0.08, fw * 0.44, fw * 0.28, 16 * sc);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(190,240,255,.72)';
   ctx.font = `${Math.max(8, 9 * sc)}px 'Share Tech Mono'`;
-  ctx.fillText('[NEKOMIMI PROFILE LOADED]', eMid.x - fw * 0.46, chin.y + fw * 0.34);
+  ctx.fillText('[NEKOMIMI PROFILE LOADED]', eMid.x - fw * 0.46, chin.y + fw * 0.36);
   ctx.restore();
 }
 
-function drawBunny(lms, eMid, chin, nose, cheekL, cheekR, fw, sc, ang) {
+function drawBunny(eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang){
   const earW = fw * 0.18;
-  const earH = fw * 0.9;
+  const earH = fw * 0.94;
   const spread = fw * 0.27;
-  const earY = eMid.y - fw * 0.44;
+  const earY = eMid.y - fw * 0.43;
 
-  function bunnyEar(x, y, w, h, tilt) {
+  function bunnyEar(x, y, w, h, tilt, pinch = 0){
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(tilt);
-    ctx.shadowColor = 'rgba(255,255,255,0.25)';
-    ctx.shadowBlur = 10;
-    const g = ctx.createLinearGradient(0, -h * 0.5, 0, h);
+    ctx.shadowColor = 'rgba(0,0,0,.25)';
+    ctx.shadowBlur = 12;
+
+    const g = ctx.createLinearGradient(0, -h * 0.55, 0, h);
     g.addColorStop(0, '#ffffff');
-    g.addColorStop(0.7, '#f0f0f0');
-    g.addColorStop(1, '#c7c7c7');
+    g.addColorStop(0.62, '#f1f1f1');
+    g.addColorStop(1, '#c8c8c8');
     ctx.fillStyle = g;
-    ctx.globalAlpha = 0.95;
-    roundRect(ctx, -w / 2, -h * 0.05, w, h, w);
+    ctx.globalAlpha = 0.96;
+    roundRect(ctx, -w/2, -h * 0.05, w, h, w);
     ctx.fill();
 
+    // soft curvature
     ctx.shadowBlur = 0;
-    ctx.fillStyle = 'rgba(255,181,193,0.78)';
-    roundRect(ctx, -w * 0.23, h * 0.06, w * 0.46, h * 0.72, w * 0.24);
+    ctx.globalAlpha = 0.22;
+    const shine = ctx.createLinearGradient(-w/2, 0, w/2, 0);
+    shine.addColorStop(0, 'rgba(255,255,255,0)');
+    shine.addColorStop(0.5, 'rgba(255,255,255,.85)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shine;
+    roundRect(ctx, -w * 0.22, -h * 0.02, w * 0.44, h * 0.84, w * 0.22);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(120,120,120,0.22)';
+    // inner ear
+    ctx.globalAlpha = 0.88;
+    ctx.fillStyle = 'rgba(255,178,200,.82)';
+    roundRect(ctx, -w * 0.22, h * 0.06, w * 0.44, h * 0.72, w * 0.22);
+    ctx.fill();
+
+    // fine lines
+    ctx.globalAlpha = 0.2;
+    ctx.strokeStyle = 'rgba(120,120,120,.26)';
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
@@ -948,150 +1051,168 @@ function drawBunny(lms, eMid, chin, nose, cheekL, cheekR, fw, sc, ang) {
   bunnyEar(eMid.x - spread, earY, earW, earH, ang - 0.06);
   bunnyEar(eMid.x + spread, earY, earW, earH, ang + 0.06);
 
-  // bow / choker
-  const neckY = chin.y + 18 * sc;
-  drawLaceBow(eMid.x, neckY, fw * 0.22, 14 * sc, '#a45cda');
+  drawSkinHalo(eMid.x, brow.y + 10 * sc, fw * 0.60, fw * 0.72, 0.14);
 
-  // soft blush
+  // silky bow + choker
+  const neckY = chin.y + 16 * sc;
+  drawFabricBow(eMid.x, neckY, fw * 0.23, 13 * sc, '#a55be0');
+  drawLaceCollar(eMid.x, neckY + 8 * sc, fw * 0.48, 10 * sc, '#4b235d', '#8b4cc7');
+
   ctx.save();
-  ctx.globalAlpha = 0.16;
-  const g1 = ctx.createRadialGradient(cheekL.x, cheekL.y, 1, cheekL.x, cheekL.y, fw * 0.11);
-  g1.addColorStop(0, 'rgba(255,180,200,0.85)');
-  g1.addColorStop(1, 'rgba(255,180,200,0)');
+  ctx.globalAlpha = 0.18;
+  const g1 = ctx.createRadialGradient(cheekL.x, cheekL.y, 1, cheekL.x, cheekL.y, fw * 0.10);
+  g1.addColorStop(0, 'rgba(255,190,205,.9)');
+  g1.addColorStop(1, 'rgba(255,190,205,0)');
   ctx.fillStyle = g1;
-  ctx.beginPath(); ctx.arc(cheekL.x, cheekL.y, fw * 0.11, 0, Math.PI * 2); ctx.fill();
-  const g2 = ctx.createRadialGradient(cheekR.x, cheekR.y, 1, cheekR.x, cheekR.y, fw * 0.11);
-  g2.addColorStop(0, 'rgba(255,180,200,0.85)');
-  g2.addColorStop(1, 'rgba(255,180,200,0)');
+  ctx.beginPath(); ctx.arc(cheekL.x, cheekL.y, fw * 0.10, 0, Math.PI * 2); ctx.fill();
+  const g2 = ctx.createRadialGradient(cheekR.x, cheekR.y, 1, cheekR.x, cheekR.y, fw * 0.10);
+  g2.addColorStop(0, 'rgba(255,190,205,.9)');
+  g2.addColorStop(1, 'rgba(255,190,205,0)');
   ctx.fillStyle = g2;
-  ctx.beginPath(); ctx.arc(cheekR.x, cheekR.y, fw * 0.11, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cheekR.x, cheekR.y, fw * 0.10, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 
   ctx.save();
-  ctx.fillStyle = '#ff9fb6';
-  ctx.beginPath(); ctx.arc(nose.x, nose.y, 3.5 * sc, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ff9fba';
+  ctx.shadowColor = '#ff9fba';
+  ctx.shadowBlur = 3;
+  ctx.beginPath();
+  ctx.arc(nose.x, nose.y, 3.2 * sc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // subtle fur cuff at neck
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.ellipse(eMid.x, chin.y + fw * 0.14, fw * 0.18, fw * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
   ctx.save();
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillStyle = 'rgba(230,240,255,.72)';
   ctx.font = `${Math.max(8, 9 * sc)}px 'Share Tech Mono'`;
-  ctx.fillText('[BUNNY ACCESSORY ONLINE]', eMid.x - fw * 0.43, chin.y + fw * 0.34);
+  ctx.fillText('[BUNNY ACCESSORY ONLINE]', eMid.x - fw * 0.44, chin.y + fw * 0.36);
   ctx.restore();
 }
 
-function drawWitch(lms, eMid, brow, fw, sc, ang) {
+function drawWitch(eMid, brow, fw, sc, ang){
   ctx.save();
   ctx.translate(eMid.x, brow.y - fw * 0.06);
-  ctx.rotate(ang * 0.16);
+  ctx.rotate(ang * 0.12);
 
-  const brimW = fw * 0.92;
+  const brimW = fw * 0.94;
   const brimH = 12 * sc;
   const hatBaseY = -(fw * 0.18);
-  const hatH = fw * 1.05;
+  const hatH = fw * 1.04;
 
-  ctx.shadowColor = 'rgba(0,0,0,0.4)';
-  ctx.shadowBlur = 14;
   const brim = ctx.createLinearGradient(-brimW / 2, 0, brimW / 2, 0);
-  brim.addColorStop(0, '#16001f');
-  brim.addColorStop(0.5, '#3c175f');
-  brim.addColorStop(1, '#16001f');
+  brim.addColorStop(0, '#120019');
+  brim.addColorStop(0.5, '#3b155d');
+  brim.addColorStop(1, '#120019');
   ctx.fillStyle = brim;
+  ctx.shadowColor = 'rgba(0,0,0,.45)';
+  ctx.shadowBlur = 14;
   ctx.beginPath();
   ctx.ellipse(0, hatBaseY, brimW / 2, brimH, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.shadowBlur = 8;
   const cone = ctx.createLinearGradient(0, hatBaseY - hatH, 0, hatBaseY);
-  cone.addColorStop(0, '#09000f');
+  cone.addColorStop(0, '#08000d');
   cone.addColorStop(1, '#1a052b');
   ctx.fillStyle = cone;
+  ctx.shadowBlur = 8;
   ctx.beginPath();
-  ctx.moveTo(-brimW * 0.13, hatBaseY - 2);
-  ctx.lineTo(brimW * 0.13, hatBaseY - 2);
-  ctx.lineTo(fw * 0.14, hatBaseY - hatH * 0.48);
+  ctx.moveTo(-brimW * 0.12, hatBaseY - 2);
+  ctx.lineTo(brimW * 0.12, hatBaseY - 2);
+  ctx.lineTo(fw * 0.15, hatBaseY - hatH * 0.48);
   ctx.lineTo(0, hatBaseY - hatH);
-  ctx.lineTo(-fw * 0.11, hatBaseY - hatH * 0.52);
+  ctx.lineTo(-fw * 0.12, hatBaseY - hatH * 0.54);
   ctx.closePath();
   ctx.fill();
 
   ctx.shadowBlur = 0;
-  ctx.fillStyle = '#7b4de2';
+  ctx.fillStyle = '#7f54ec';
   roundRect(ctx, -brimW * 0.12, hatBaseY - hatH * 0.24, brimW * 0.24, 10 * sc, 2 * sc);
   ctx.fill();
-  ctx.strokeStyle = '#f0cc62';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(-7 * sc, hatBaseY - hatH * 0.24 + 1.5, 14 * sc, 7.5 * sc);
-  ctx.restore();
 
+  ctx.strokeStyle = '#f0d06a';
+  ctx.lineWidth = 1.4;
+  ctx.strokeRect(-7 * sc, hatBaseY - hatH * 0.24 + 1.4, 14 * sc, 7.6 * sc);
+
+  // tiny stars
   const t = frame * 0.04;
-  const orbitCX = eMid.x;
-  const orbitCY = brow.y - fw * 0.16;
   [
     { c: '#ffd35c', p: 0 },
     { c: '#ff5ca0', p: 2.1 },
-    { c: '#00F5FF', p: 4.2 }
-  ].forEach(({ c, p }) => {
-    const sx = orbitCX + Math.cos(t + p) * fw * 0.62;
-    const sy = orbitCY + Math.sin(t + p) * fw * 0.22;
+    { c: '#8ef0ff', p: 4.2 }
+  ].forEach(({c, p}) => {
+    const sx = eMid.x + Math.cos(t + p) * fw * 0.62;
+    const sy = brow.y - fw * 0.18 + Math.sin(t + p) * fw * 0.22;
     ctx.fillStyle = c;
     ctx.globalAlpha = 0.85;
     star(ctx, sx, sy, (2.4 + Math.sin(t * 2 + p) * 0.7) * sc, 4);
   });
-  ctx.globalAlpha = 1;
+
+  ctx.restore();
 }
 
-function drawAngel(lms, eMid, brow, fw, sc, ang) {
+function drawAngel(eMid, brow, fw, sc, ang){
   ctx.save();
   ctx.translate(eMid.x, brow.y - fw * 0.06);
   ctx.rotate(ang * 0.08);
-  const haloR = fw * 0.38;
-  const haloCY = brow.y - fw * 0.2;
 
-  // halo
-  const glow = ctx.createRadialGradient(0, 0, haloR * 0.38, 0, 0, haloR * 1.2);
-  glow.addColorStop(0, 'rgba(255,220,90,0.0)');
-  glow.addColorStop(0.5, 'rgba(255,220,90,0.22)');
-  glow.addColorStop(1, 'rgba(255,220,90,0.0)');
-  ctx.fillStyle = glow;
+  const haloR = fw * 0.39;
+  const haloY = -fw * 0.20;
+
+  const haloGlow = ctx.createRadialGradient(0, haloY, haloR * 0.25, 0, haloY, haloR * 1.15);
+  haloGlow.addColorStop(0, 'rgba(255,220,90,0)');
+  haloGlow.addColorStop(.5, 'rgba(255,220,90,.22)');
+  haloGlow.addColorStop(1, 'rgba(255,220,90,0)');
+  ctx.fillStyle = haloGlow;
   ctx.beginPath();
-  ctx.ellipse(0, haloCY - (brow.y - fw * 0.06), haloR * 1.4, haloR * 0.48, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, haloY, haloR * 1.35, haloR * 0.46, 0, 0, Math.PI * 2);
   ctx.fill();
+
   ctx.strokeStyle = '#ffd35c';
   ctx.lineWidth = 4 * sc;
   ctx.shadowColor = '#ffd35c';
   ctx.shadowBlur = 14;
   ctx.beginPath();
-  ctx.ellipse(0, haloCY - (brow.y - fw * 0.06), haloR, haloR * 0.28, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, haloY, haloR, haloR * 0.28, 0, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
 
-  // wings
   ctx.save();
   ctx.translate(eMid.x, brow.y + fw * 0.05);
   ctx.rotate(ang * 0.05);
-  const wingW = fw * 0.76;
+  const wingW = fw * 0.78;
   const wingH = fw * 0.52;
 
   ['left', 'right'].forEach(side => {
     const sign = side === 'left' ? -1 : 1;
     ctx.save();
     ctx.scale(sign, 1);
-    const g = ctx.createRadialGradient(wingW * 0.3, 0, 0, wingW * 0.35, 0, wingW * 0.8);
-    g.addColorStop(0, 'rgba(255,255,255,0.55)');
+
+    const g = ctx.createRadialGradient(wingW * 0.3, 0, 0, wingW * 0.34, 0, wingW * 0.82);
+    g.addColorStop(0, 'rgba(255,255,255,.58)');
     g.addColorStop(1, 'rgba(220,220,255,0)');
     ctx.fillStyle = g;
-    ctx.shadowColor = 'rgba(255,255,255,0.4)';
+    ctx.shadowColor = 'rgba(255,255,255,.36)';
     ctx.shadowBlur = 16;
+
     ctx.beginPath();
     ctx.moveTo(12 * sc, 0);
-    ctx.bezierCurveTo(wingW * 0.36, -wingH * 0.6, wingW * 0.85, -wingH * 0.25, wingW * 0.86, wingH * 0.1);
-    ctx.bezierCurveTo(wingW * 0.7, wingH * 0.42, wingW * 0.28, wingH * 0.32, 12 * sc, wingH * 0.08);
+    ctx.bezierCurveTo(wingW * 0.38, -wingH * 0.60, wingW * 0.88, -wingH * 0.24, wingW * 0.86, wingH * 0.10);
+    ctx.bezierCurveTo(wingW * 0.70, wingH * 0.42, wingW * 0.28, wingH * 0.32, 12 * sc, wingH * 0.08);
     ctx.closePath();
     ctx.fill();
+
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(220,230,255,0.36)';
+    ctx.strokeStyle = 'rgba(220,230,255,.34)';
     ctx.lineWidth = 1;
-    for (let i = 1; i <= 4; i++) {
+    for(let i=1;i<=4;i++){
       const t = i / 5;
       ctx.beginPath();
       ctx.moveTo(12 * sc + t * wingW * 0.22, 0);
@@ -1103,10 +1224,10 @@ function drawAngel(lms, eMid, brow, fw, sc, ang) {
   ctx.restore();
 
   const t = frame * 0.045;
-  for (let i = 0; i < 6; i++) {
+  for(let i=0;i<6;i++){
     const a = t + i * Math.PI / 3;
     const px = eMid.x + Math.cos(a) * haloR;
-    const py = haloCY + Math.sin(a) * haloR * 0.28;
+    const py = brow.y - fw * 0.20 + Math.sin(a) * haloR * 0.28;
     ctx.fillStyle = '#ffd35c';
     ctx.globalAlpha = 0.8;
     star(ctx, px, py, (1.4 + Math.sin(t * 3 + i) * 0.5) * 3 * sc, 4);
@@ -1114,19 +1235,19 @@ function drawAngel(lms, eMid, brow, fw, sc, ang) {
   ctx.globalAlpha = 1;
 }
 
-function drawHUD(W, H, hasF) {
+function drawHUD(W, H, hasF){
   const fsz = Math.max(9, W * 0.016);
   ctx.font = `${fsz}px 'Share Tech Mono'`;
-  ctx.fillStyle = 'rgba(0,245,255,0.56)';
+  ctx.fillStyle = 'rgba(160,240,255,.70)';
   ctx.fillText(`FRAME : ${String(frame).padStart(7, '0')}`, 12, H - 28);
   ctx.fillText(`OVERLAY: ${costume.toUpperCase()}`, 12, H - 14);
 
   const lockX = W - Math.min(140, W * 0.16);
-  ctx.fillStyle = hasF ? '#00FF88' : '#FF4466';
+  ctx.fillStyle = hasF ? '#45f4ad' : '#ff6b8e';
   ctx.fillText(hasF ? '◉ FACE LOCKED' : '◎ SCANNING...', lockX, 68);
 
   const cx = W / 2, cy = H / 2;
-  ctx.strokeStyle = 'rgba(0,245,255,0.1)';
+  ctx.strokeStyle = 'rgba(127,232,255,.1)';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(cx - 20, cy); ctx.lineTo(cx + 20, cy); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(cx, cy - 20); ctx.lineTo(cx, cy + 20); ctx.stroke();
