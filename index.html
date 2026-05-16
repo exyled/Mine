@@ -27,7 +27,16 @@ html,body{
 video{ position:absolute; width:1px; height:1px; opacity:.01; pointer-events:none; }
 #output{ position:absolute; inset:0; width:100%; height:100%; display:block; background:#000; }
 
-.bracket{ position:absolute; width:40px; height:40px; border:2px solid var(--cyan); pointer-events:none; z-index:10; filter: drop-shadow(0 0 8px rgba(127,232,255,.4)); }
+/* Enhanced CRT & Vignette Overlay */
+#app::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.6) 150%),
+              linear-gradient(rgba(255,255,255,0.03) 50%, transparent 50%);
+  background-size: 100% 100%, 100% 4px;
+  pointer-events: none; z-index: 18;
+}
+
+.bracket{ position:absolute; width:40px; height:40px; border:2px solid var(--cyan); pointer-events:none; z-index:10; filter: drop-shadow(0 0 8px rgba(127,232,255,.8)); }
 .tl{top:20px;left:20px;border-right:none;border-bottom:none}
 .tr{top:20px;right:20px;border-left:none;border-bottom:none}
 .bl{bottom:120px;left:20px;border-right:none;border-top:none}
@@ -37,36 +46,39 @@ video{ position:absolute; width:1px; height:1px; opacity:.01; pointer-events:non
   position:absolute; top:0;left:0;right:0; height:50px; display:flex; align-items:center; justify-content:space-between;
   padding:0 20px; background:linear-gradient(to bottom, rgba(0,10,20,.9), transparent); z-index:20; pointer-events:none;
 }
-.sys-title{ font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; letter-spacing:5px; color:var(--cyan); text-shadow:0 0 10px var(--cyan); }
-.sys-status{ font-size:10px; letter-spacing:2px; color:var(--cyan); }
+.sys-title{ font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; letter-spacing:5px; color:var(--cyan); text-shadow:0 0 15px var(--cyan); }
+.sys-status{ font-size:10px; letter-spacing:2px; color:var(--cyan); text-shadow:0 0 8px var(--cyan); }
 
 #scanline{
-  position:absolute; left:0;right:0; height:2px; background:var(--cyan); opacity:.3;
-  box-shadow:0 0 10px var(--cyan); animation:sweep 6s linear infinite; z-index:15; pointer-events:none;
+  position:absolute; left:0;right:0; height:3px; background:var(--cyan); opacity:.4;
+  box-shadow:0 0 15px var(--cyan), 0 0 5px #fff; animation:sweep 5s linear infinite; z-index:15; pointer-events:none;
 }
 @keyframes sweep{from{top:-10px}to{top:110%}}
 
-#bottom-panel{ position:absolute; left:0;right:0;bottom:0; padding:15px; background:rgba(0,10,20,.85); z-index:20; border-top:1px solid rgba(127,232,255,.2); }
+#bottom-panel{ position:absolute; left:0;right:0;bottom:0; padding:15px; background:rgba(0,10,20,.85); z-index:20; border-top:1px solid rgba(127,232,255,.3); box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
 #camera-controls{ display:flex; justify-content:center; margin-bottom:10px; }
 #costume-grid{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 .cBtn{
   appearance:none; font-family:'Share Tech Mono', monospace; font-size:11px; letter-spacing:2px;
-  color:var(--cyan); background:transparent; border:1px solid var(--cyan); padding:10px 15px;
-  cursor:pointer; transition:all.2s ease; text-transform:uppercase; border-radius:4px;
+  color:var(--cyan); background:rgba(127,232,255,0.05); border:1px solid var(--cyan); padding:10px 15px;
+  cursor:pointer; transition:all .2s ease; text-transform:uppercase; border-radius:4px;
 }
 .cBtn:disabled{ opacity:0.35; cursor:not-allowed; }
-.cBtn.active{ background:var(--cyan); color:#000; box-shadow:0 0 15px rgba(127,232,255,.6); }
+.cBtn:hover{ background:rgba(127,232,255,0.2); }
+.cBtn.active{ background:var(--cyan); color:#000; box-shadow:0 0 20px rgba(127,232,255,.8); font-weight:bold; }
 
 #loading{
-  position:fixed; inset:0; background:#000; display:flex; flex-direction:column;
+  position:fixed; inset:0; background:radial-gradient(circle at center, #050a14, #000); display:flex; flex-direction:column;
   align-items:center; justify-content:center; z-index:999; gap:20px;
 }
-.load-logo{ font-family:'Orbitron', sans-serif; font-size:30px; letter-spacing:10px; color:var(--cyan); text-shadow:0 0 20px var(--cyan); }
+.load-logo{ font-family:'Orbitron', sans-serif; font-size:35px; letter-spacing:12px; color:var(--cyan); text-shadow:0 0 25px var(--cyan); animation:pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; text-shadow:0 0 25px var(--cyan); } 50% { opacity: 0.7; text-shadow:0 0 10px var(--cyan); } }
+
 #startBtn{
-  padding:12px 30px; background:transparent; border:1px solid var(--cyan); color:var(--cyan);
-  font-family:'Orbitron', sans-serif; font-weight:700; letter-spacing:3px; cursor:pointer;
+  padding:14px 35px; background:transparent; border:2px solid var(--cyan); color:var(--cyan);
+  font-family:'Orbitron', sans-serif; font-weight:700; letter-spacing:3px; cursor:pointer; transition: all 0.3s;
 }
-#startBtn:hover{ background:var(--cyan); color:#000; }
+#startBtn:hover{ background:var(--cyan); color:#000; box-shadow: 0 0 20px var(--cyan); }
 </style>
 </head>
 <body>
@@ -91,7 +103,7 @@ video{ position:absolute; width:1px; height:1px; opacity:.01; pointer-events:non
       <button class="cBtn" data-costume="catgirl">MEIDO</button>
       <button class="cBtn" data-costume="gunvarrel">GUNVARREL</button>
       <button class="cBtn" data-costume="geeks">GEEKS</button>
-      <button class="cBtn" data-costume="system" style="color:var(--red); border-color:var(--red)">REPORT</button>
+      <button class="cBtn" data-costume="system" style="color:var(--red); border-color:var(--red); text-shadow: 0 0 5px var(--red);">REPORT</button>
     </div>
   </div>
 </div>
@@ -103,46 +115,60 @@ video{ position:absolute; width:1px; height:1px; opacity:.01; pointer-events:non
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 <script>
-const vid = document.getElementById('vid');
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    this.moveTo(x + r, y);
+    this.lineTo(x + w - r, y);
+    this.arcTo(x + w, y, x + w, y + r, r);
+    this.lineTo(x + w, y + h - r);
+    this.arcTo(x + w, y + h, x + w - r, y + h, r);
+    this.lineTo(x + r, y + h);
+    this.arcTo(x, y + h, x, y + h - r, r);
+    this.lineTo(x, y + r);
+    this.arcTo(x, y, x + r, y, r);
+    this.closePath();
+    return this;
+  };
+}
+
+const vid    = document.getElementById('vid');
 const canvas = document.getElementById('output');
-const ctx = canvas.getContext('2d', { alpha: false });
+const ctx    = canvas.getContext('2d', { alpha: false });
 const loadEl = document.getElementById('loading');
-const fpsEl = document.getElementById('fps-counter');
 
-let costume = 'none';
-let frame = 0;
-let lastTime = performance.now();
-let ready = false;
-let mirrorX = true;
+let costume  = 'none';
+let frame    = 0;
+let ready    = false;
+let mirrorX  = true;
 
-// FIX 2: particles must be an array, not a number
 let particles = [];
 
-// FIX 3: frauQuotes must be an array of strings
 const frauQuotes = [
-  'agepoyo', 'jajaja', 'NEET PRIDE', 'boo', 'ORE TUEEE',
-  'www', 'kawaii', 'riajuu go explode', 'flag secured', '乙女理論'
+  'agepoyo', 'jajaja', 'NEET PRIDE', 'Duhuhu...', '0/10...',
+  'www', 'kawaii', 'riajuu explode', 'flag secured', '乙女理論',
+  'lol', 'git push', 'sudo rm -rf', '404', 'fwiw', 'tbh'
 ];
 
-// FIX 4: reportLines must be an array of strings
 const reportLines = [
+  'Warnings are meaningless. It cannot be stopped unless they are prosecuted.',
   'KIMIJIMA REPORT NO.1 — CLASSIFIED',
   'SUBJECT: [REDACTED] PROTOCOL ACTIVATED',
-  'DATE: ██/██/20██',
-  'AUTHORIZED EYES ONLY',
+  'DATE: ██/██/20██  CLEARANCE: ████',
+  'AUTHORIZED EYES ONLY — IRUO SYSTEM',
   'STATUS: SYSTEM OVERRIDE IN PROGRESS',
   'TARGET ACQUIRED — MONITORING ACTIVE',
   'WARNING: UNAUTHORIZED ACCESS DETECTED',
   'UPLINK TO AMICA SATELLITE: ESTABLISHED',
   'SOLAR FLARE EVENT — T-MINUS UNKNOWN',
   'HUMAN FACTOR COEFFICIENT: 0.000██',
-  'REPORT CONTINUES ON NEXT PAGE...',
+  'KOGANE PROTOCOL: ARMED AND READY',
   '█████████████████████████████████',
 ];
 
 function resizeCanvas(){
   const dpr = Math.max(1, window.devicePixelRatio || 1);
-  canvas.width = window.innerWidth * dpr;
+  canvas.width  = window.innerWidth  * dpr;
   canvas.height = window.innerHeight * dpr;
 }
 window.addEventListener('resize', resizeCanvas);
@@ -156,25 +182,21 @@ function P(lms, i){
   };
 }
 
-const faceMesh = new FaceMesh({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+const faceMesh = new FaceMesh({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
 faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 faceMesh.onResults(onResults);
 
-// Camera management
 let facingMode = 'user';
 let currentStream = null;
 
 async function startCamera(mode) {
-  if (currentStream) {
-    currentStream.getTracks().forEach(t => t.stop());
-  }
+  if (currentStream) currentStream.getTracks().forEach(t => t.stop());
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: mode, width: 1280, height: 720 }
     });
     vid.srcObject = stream;
     currentStream = stream;
-    // FIX: mirror front-facing camera only; rear camera should not be mirrored
     mirrorX = (mode === 'user');
     await vid.play();
   } catch (err) {
@@ -200,360 +222,501 @@ document.getElementById('camToggle').addEventListener('click', async () => {
 });
 
 async function processFrame(){
-  if(vid.readyState >= 2) await faceMesh.send({ image: vid });
+  if (vid.readyState >= 2) await faceMesh.send({ image: vid });
   requestAnimationFrame(processFrame);
 }
 
 document.querySelectorAll('.cBtn').forEach(btn => {
   btn.addEventListener('click', () => {
-    if(btn.id === 'camToggle') return;
+    if (btn.id === 'camToggle') return;
     document.querySelectorAll('.cBtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     costume = btn.dataset.costume;
-    if(costume === 'system') reportY = canvas.height;
+    if (costume === 'system') reportY = canvas.height;
   });
 });
 
 function getEulerAngles(lms) {
-  const nose   = P(lms, 4);
-  const leftT  = P(lms, 234);
-  const rightT = P(lms, 454);
-
-  // FIX 5: direction vector must run from visual-left → visual-right on the
-  // mirrored canvas. After P() mirrors x, landmark 454 sits on the left of the
-  // screen and 234 on the right, so the subtraction order is reversed.
+  const nose  = P(lms, 4);
+  const leftT = P(lms, 234);
+  const rightT= P(lms, 454);
   const dx = leftT.x - rightT.x;
   const dy = leftT.y - rightT.y;
   const dz = leftT.z - rightT.z;
-
   const roll = Math.atan2(dy, dx);
   const yaw  = Math.asin(dz / Math.hypot(dx, dy, dz));
-
-  const midX = (leftT.x + rightT.x) / 2;
   const midY = (leftT.y + rightT.y) / 2;
   const midZ = (leftT.z + rightT.z) / 2;
-  const pitch = Math.atan2(nose.y - midY, nose.z - midZ) + Math.PI;
-
-  return { roll, pitch: pitch * 0.1, yaw };
+  const pitch = (Math.atan2(nose.y - midY, nose.z - midZ) + Math.PI) * 0.1;
+  return { roll, pitch, yaw };
 }
 
-// Kimijima report scroll position
 let reportY = 0;
 
 function onResults(res){
-  if(!ready) { ready = true; loadEl.style.display = 'none'; }
+  if (!ready) { ready = true; loadEl.style.display = 'none'; }
   const W = canvas.width, H = canvas.height;
 
   ctx.save();
   ctx.clearRect(0, 0, W, H);
 
-  if(mirrorX){
+  if (mirrorX) {
     ctx.save(); ctx.translate(W, 0); ctx.scale(-1, 1);
     ctx.drawImage(res.image, 0, 0, W, H); ctx.restore();
   } else {
     ctx.drawImage(res.image, 0, 0, W, H);
   }
 
-  // System Override (Kimijima Mode) BG
-  if(costume === 'system') {
-    const g = ctx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H);
-    g.addColorStop(0, 'rgba(50,0,0,0.4)');
-    g.addColorStop(1, 'rgba(10,0,0,0.95)');
+  // Atmospheric overlays
+  if (costume === 'system') {
+    const g = ctx.createRadialGradient(W/2, H/2, H*0.1, W/2, H/2, H*0.9);
+    g.addColorStop(0, 'rgba(80,0,0,0.5)');
+    g.addColorStop(1, 'rgba(15,0,0,0.98)');
     ctx.fillStyle = g;
-    ctx.fillRect(0,0,W,H);
+    ctx.fillRect(0, 0, W, H);
+  } else if (costume === 'gunvarrel') {
+    ctx.fillStyle = 'rgba(0,15,30,0.2)';
+    ctx.fillRect(0, 0, W, H);
   } else {
-    ctx.fillStyle = 'rgba(0, 10, 16, 0.15)';
-    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = 'rgba(0,10,16,0.15)';
+    ctx.fillRect(0, 0, W, H);
   }
 
-  // FIX 1: index into [0] to get the first face's landmark array.
-  // res.multiFaceLandmarks is an array of faces; without [0], lms[i] returns
-  // undefined for any i > 0, crashing the render loop immediately.
-  if(res.multiFaceLandmarks && res.multiFaceLandmarks.length > 0){
-    const lms = res.multiFaceLandmarks[0];
+  if (res.multiFaceLandmarks && res.multiFaceLandmarks.length > 0) {
+    const lms   = res.multiFaceLandmarks[0];
     const euler = getEulerAngles(lms);
-    const fw = Math.hypot(P(lms,234).x - P(lms,454).x, P(lms,234).y - P(lms,454).y);
+    const fw    = Math.hypot(P(lms,234).x - P(lms,454).x, P(lms,234).y - P(lms,454).y);
 
-    if(costume === 'catgirl')   drawCatGirl(lms, fw, euler);
-    else if(costume === 'gunvarrel') drawGunvarrel(lms, fw, euler);
-    else if(costume === 'geeks')     drawFrauGeeks(lms, fw, euler);
+    if      (costume === 'catgirl')   drawCatGirl(lms, fw, euler);
+    else if (costume === 'gunvarrel') drawGunvarrel(lms, fw, euler);
+    else if (costume === 'geeks')     drawFrauGeeks(lms, fw, euler);
   }
 
-  if(costume === 'system') drawKimijimaReport(W, H);
-  if(costume === 'geeks')  updateParticles();
+  if (costume === 'system') drawKimijimaReport(W, H);
+  if (costume === 'geeks')  updateParticles();
 
   ctx.restore();
   frame++;
 }
 
-// ----------------------------------------------------
-// 1. NEKOMIMI (Cat Girl)
-// ----------------------------------------------------
-function drawCatGirl(lms, fw, euler){
-  const brow     = P(lms, 10);
-  const leftTemp = P(lms, 103);
-  const rightTemp= P(lms, 332);
-  const scale    = fw / 200;
+// ════════════════════════════════════════════════════════
+// 1. NEKOMIMI — Cat Girl (Upgraded Shading)
+// ════════════════════════════════════════════════════════
+function drawCatGirl(lms, fw, euler) {
+  const brow  = P(lms, 10);
+  const scale = fw / 200;
 
   ctx.save();
   ctx.translate(brow.x, brow.y);
   ctx.rotate(euler.roll);
 
-  // Structural HUD Tag
-  ctx.fillStyle   = 'rgba(0, 20, 30, 0.7)';
-  ctx.strokeStyle = '#7fe8ff';
-  ctx.lineWidth   = 1;
-  ctx.beginPath();
-  ctx.rect(fw*0.6, -fw*0.5, 160*scale, 40*scale);
-  ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#7fe8ff';
-  ctx.font = `${14*scale}px 'Share Tech Mono'`;
-  ctx.fillText("FILTER: MEIDO", fw*0.6 + 10, -fw*0.5 + 25*scale);
-  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(fw*0.6, -fw*0.5 + 20*scale); ctx.stroke();
-
-  // Ears using Bezier Curves
   function drawEar(sign) {
     ctx.save();
-    ctx.translate(sign * fw * 0.35, -fw * 0.2);
-    ctx.rotate(sign * 0.3 + euler.yaw * sign);
+    ctx.translate(sign * fw * 0.38, -fw * 0.14);
+    ctx.rotate(sign * 0.22 + euler.yaw * sign * 0.3);
 
-    // Outer Ear
-    const eg = ctx.createLinearGradient(0, -fw*0.6, 0, fw*0.2);
-    eg.addColorStop(0, '#ffffff');
-    eg.addColorStop(1, '#ffb6c1');
-    ctx.fillStyle = eg;
+    // Drop shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur  = 15 * scale;
+    ctx.shadowOffsetY = 8 * scale;
 
+    // Outer ear shape - Richer gradient
     ctx.beginPath();
-    ctx.moveTo(0, -fw*0.6);
-    ctx.bezierCurveTo(fw*0.15, -fw*0.3, fw*0.25, 0, fw*0.2, fw*0.2);
-    ctx.lineTo(-fw*0.2, fw*0.2);
-    ctx.bezierCurveTo(-fw*0.15, 0, -fw*0.05, -fw*0.3, 0, -fw*0.6);
+    ctx.moveTo(0, -fw * 0.55);
+    ctx.bezierCurveTo( fw*0.16, -fw*0.28,  fw*0.26, fw*0.02,  fw*0.17, fw*0.18);
+    ctx.lineTo(-fw*0.17, fw*0.18);
+    ctx.bezierCurveTo(-fw*0.16, fw*0.02, -fw*0.08, -fw*0.28, 0, -fw*0.55);
+    ctx.closePath();
+
+    const outerG = ctx.createLinearGradient(0, -fw*0.55, 0, fw*0.18);
+    outerG.addColorStop(0.0, '#ffffff');
+    outerG.addColorStop(0.2, '#fff0f4');
+    outerG.addColorStop(0.6, '#ffc2d4');
+    outerG.addColorStop(1.0, '#e68a9f');
+    ctx.fillStyle = outerG;
     ctx.fill();
 
-    // Inner Cavity (Auditory Shadow)
-    const ig = ctx.createRadialGradient(0, 0, 1, 0, 0, fw*0.4);
-    ig.addColorStop(0, 'rgba(216,191,216, 0.8)');
-    ig.addColorStop(1, 'rgba(216,191,216, 0)');
-    ctx.fillStyle = ig;
-    ctx.beginPath();
-    ctx.moveTo(0, -fw*0.4);
-    ctx.bezierCurveTo(fw*0.08, -fw*0.2, fw*0.12, fw*0.05, fw*0.1, fw*0.15);
-    ctx.lineTo(-fw*0.1, fw*0.15);
-    ctx.bezierCurveTo(-fw*0.08, fw*0.05, -fw*0.04, -fw*0.2, 0, -fw*0.4);
-    ctx.fill();
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
+    // Inner cavity — Subsurface scattering simulation
+    ctx.save();
+    ctx.clip();
+    ctx.beginPath();
+    ctx.moveTo(0, -fw*0.38);
+    ctx.bezierCurveTo( fw*0.09, -fw*0.18,  fw*0.12, fw*0.04,  fw*0.09, fw*0.13);
+    ctx.lineTo(-fw*0.09, fw*0.13);
+    ctx.bezierCurveTo(-fw*0.07, fw*0.04, -fw*0.04, -fw*0.18, 0, -fw*0.38);
+    ctx.closePath();
+    const innerG = ctx.createRadialGradient(0, -fw*0.08, 0, 0, -fw*0.08, fw*0.4);
+    innerG.addColorStop(0,   'rgba(255,100,140,0.95)');
+    innerG.addColorStop(0.4, 'rgba(230,80,120,0.85)');
+    innerG.addColorStop(1,   'rgba(150, 40,80,0.2)');
+    ctx.fillStyle = innerG;
+    ctx.shadowColor = 'rgba(255,100,140, 1)';
+    ctx.shadowBlur = 10 * scale;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // Specular shine
+    ctx.save();
+    ctx.globalAlpha = 0.8;
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth   = 3 * scale;
+    ctx.lineCap     = 'round';
+    ctx.filter = `blur(${2*scale}px)`;
+    ctx.beginPath();
+    ctx.moveTo(-fw*0.04, -fw*0.50);
+    ctx.bezierCurveTo(-fw*0.10, -fw*0.30, -fw*0.14, -fw*0.08, -fw*0.10, fw*0.04);
+    ctx.stroke();
+    ctx.restore();
+
+    // Enhanced Fur tufts
+    ctx.strokeStyle = 'rgba(255,230,235,0.9)';
+    ctx.lineWidth   = 1.5 * scale;
+    ctx.lineCap     = 'round';
+    for (let t = -2; t <= 2; t++) {
+      ctx.beginPath();
+      ctx.moveTo(t * fw*0.03, -fw*0.48);
+      ctx.quadraticCurveTo(t * fw*0.06, -fw*0.58, t * fw*0.08, -fw*0.65 + Math.abs(t)*fw*0.02);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
-  drawEar(-1); // Left
-  drawEar(1);  // Right
+  drawEar(-1);
+  drawEar(1);
+
+  // ── Maid Headdress ────────────────────────────────────
+  const hbY = -fw * 0.10;
+  const hbH = fw * 0.12;
+  const hbW = fw * 1.08;
+
+  ctx.save();
+  ctx.shadowColor   = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur    = 12 * scale;
+  ctx.shadowOffsetY = 6 * scale;
+
+  const hbG = ctx.createLinearGradient(0, hbY, 0, hbY + hbH);
+  hbG.addColorStop(0,   '#ffffff');
+  hbG.addColorStop(0.3, '#f4f8ff');
+  hbG.addColorStop(0.8, '#b5cbe0');
+  hbG.addColorStop(1,   '#8a9db0');
+  ctx.fillStyle = hbG;
+  ctx.beginPath();
+  ctx.roundRect(-hbW/2, hbY, hbW, hbH, 5 * scale);
+  ctx.fill();
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+  // Frills (Sine wave)
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  for(let x = -hbW/2; x <= hbW/2; x+= 5*scale) {
+    ctx.arc(x, hbY + hbH, 4*scale, 0, Math.PI);
+  }
+  ctx.fill();
+
+  ctx.restore();
+
+  // ── HUD Info Tag (Glow Enhanced) ─────────────────────
+  const tX = fw * 0.60, tY = -fw * 0.56, tW = 175 * scale, tH = 54 * scale;
+  ctx.fillStyle   = 'rgba(0,25,35,0.85)';
+  ctx.strokeStyle = '#7fe8ff';
+  ctx.lineWidth   = 1.5;
+  ctx.shadowColor = 'rgba(127,232,255,0.8)';
+  ctx.shadowBlur  = 15;
+  ctx.beginPath();
+  ctx.roundRect(tX, tY, tW, tH, 3 * scale);
+  ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = '#7fe8ff';
+  ctx.shadowBlur = 8;
+  ctx.font      = `bold ${13*scale}px 'Share Tech Mono'`;
+  ctx.fillText('◈ FILTER: MEIDO', tX + 10*scale, tY + 17*scale);
+  ctx.fillStyle = '#7fe8ff';
+  ctx.shadowBlur = 0;
+  ctx.font      = `${10*scale}px 'Share Tech Mono'`;
+  ctx.fillText('UNIT: NEKO-01  ●  STATUS: ACTIVE', tX + 10*scale, tY + 34*scale);
+  ctx.fillText(`CONF: ${(97 + Math.sin(frame*0.08)*2).toFixed(1)}%`, tX + 10*scale, tY + 48*scale);
+
   ctx.restore();
 }
 
-// ----------------------------------------------------
-// 2. GUNVARREL (Mecha Helmet)
-// ----------------------------------------------------
-function drawGunvarrel(lms, fw, euler){
+// ════════════════════════════════════════════════════════
+// 2. GUNVARREL — Mecha Helmet (Chrome Shading)
+// ════════════════════════════════════════════════════════
+function drawGunvarrel(lms, fw, euler) {
   const nose  = P(lms, 4);
   const scale = fw / 150;
 
   ctx.save();
-  ctx.translate(nose.x, nose.y - fw*0.1);
+  ctx.translate(nose.x, nose.y - fw * 0.05);
   ctx.rotate(euler.roll);
-
-  // Transform for 3D projection
   ctx.transform(1, 0, 0, Math.cos(euler.pitch), 0, 0);
 
-  // Cranial Dome
-  const domeG = ctx.createLinearGradient(0, -fw, 0, fw*0.5);
-  domeG.addColorStop(0, '#ffffff');
-  domeG.addColorStop(0.8, '#888888');
-  domeG.addColorStop(1, '#333333');
+  // ── Cranial Dome (Chrome Environment Map) ────────────
+  ctx.shadowColor   = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur    = 25 * scale;
+  ctx.shadowOffsetY = 10 * scale;
+
+  const domeG = ctx.createLinearGradient(-fw*0.2, -fw*0.9, fw*0.5, fw*0.3);
+  domeG.addColorStop(0.00, '#ffffff'); 
+  domeG.addColorStop(0.10, '#b8b8b8');
+  domeG.addColorStop(0.40, '#4a4a4a');
+  domeG.addColorStop(0.60, '#111111'); // Dark horizon
+  domeG.addColorStop(0.70, '#3a4a5a'); // Blue sky bounce
+  domeG.addColorStop(1.00, '#000000');
   ctx.fillStyle = domeG;
   ctx.beginPath();
-  ctx.ellipse(0, -fw*0.2, fw*0.65, fw*0.7, 0, Math.PI, 0);
+  ctx.ellipse(0, -fw*0.22, fw*0.68, fw*0.72, 0, Math.PI, 0);
   ctx.fill();
 
-  // Faceplate (Mandibular)
-  ctx.fillStyle = '#cc0000';
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+  // Specular Highlight Bloom
+  const specG = ctx.createLinearGradient(-fw*0.35, -fw*0.88, fw*0.1, -fw*0.4);
+  specG.addColorStop(0, 'rgba(255,255,255,0.8)');
+  specG.addColorStop(1, 'rgba(255,255,255,0.00)');
+  ctx.fillStyle = specG;
+  ctx.filter = `blur(${4*scale}px)`;
   ctx.beginPath();
-  ctx.moveTo(-fw*0.35, fw*0.1);
-  ctx.lineTo(0, fw*0.5);
-  ctx.lineTo(fw*0.35, fw*0.1);
-  ctx.lineTo(fw*0.5, fw*0.3);
-  ctx.lineTo(0, fw*0.75);
-  ctx.lineTo(-fw*0.5, fw*0.3);
+  ctx.ellipse(-fw*0.14, -fw*0.70, fw*0.26, fw*0.16, -0.35, 0, Math.PI*2);
   ctx.fill();
+  ctx.filter = "none";
 
-  // Ocular Sensors (Recessed Sockets + LED Glow)
-  function drawEye(sign) {
+  // ── Eye Sensors (Intense Bloom Lenses) ───────────────
+  function drawLens(sign) {
     ctx.save();
-    ctx.translate(sign * fw * 0.25, -fw*0.05);
+    ctx.translate(sign * fw*0.22, -fw*0.09);
 
-    // Socket
-    ctx.fillStyle = '#111';
     ctx.beginPath();
-    ctx.moveTo(sign * -fw*0.15, -fw*0.1);
-    ctx.lineTo(sign *  fw*0.2,  -fw*0.15);
-    ctx.lineTo(sign *  fw*0.15,  fw*0.05);
-    ctx.lineTo(sign * -fw*0.1,   0);
-    ctx.fill();
+    ctx.moveTo(sign*-fw*0.17, -fw*0.09);
+    ctx.lineTo(sign* fw*0.22, -fw*0.10);
+    ctx.lineTo(sign* fw*0.19,  fw*0.09);
+    ctx.lineTo(sign*-fw*0.13,  fw*0.08);
+    ctx.closePath();
 
-    // LED Glow
+    const lG = ctx.createLinearGradient(sign*-fw*0.17, 0, sign*fw*0.22, 0);
+    lG.addColorStop(0,   '#aa5500');
+    lG.addColorStop(0.5, '#ffff55');
+    lG.addColorStop(1,   '#ffaa00');
+    ctx.fillStyle   = lG;
     ctx.shadowColor = '#ffff00';
-    ctx.shadowBlur  = 20 * scale;
-    ctx.fillStyle   = '#ffffaa';
-    ctx.beginPath();
-    ctx.moveTo(sign * -fw*0.1,  -fw*0.05);
-    ctx.lineTo(sign *  fw*0.15, -fw*0.1);
-    ctx.lineTo(sign *  fw*0.1,   fw*0.02);
-    ctx.lineTo(sign * -fw*0.05,  0);
+    ctx.shadowBlur  = 30 * scale; // Huge bloom
     ctx.fill();
+    ctx.shadowBlur = 0;
     ctx.restore();
   }
-  drawEye(-1); drawEye(1);
+  drawLens(-1); drawLens(1);
 
-  // Golden V-Fin Antenna
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur  = 10;
-  ctx.fillStyle   = '#ffd700';
+  // ── Lower Jaw / Faceplate (Metallic Red) ────────────
+  const jawG = ctx.createLinearGradient(-fw*0.4, fw*0.06, fw*0.4, fw*0.8);
+  jawG.addColorStop(0.0, '#ff3333');
+  jawG.addColorStop(0.3, '#aa0000');
+  jawG.addColorStop(0.7, '#660000');
+  jawG.addColorStop(1.0, '#220000');
+  ctx.fillStyle   = jawG;
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur  = 15 * scale;
   ctx.beginPath();
-  ctx.moveTo(0, -fw*0.25);
-  ctx.lineTo(-fw*0.5, -fw*0.6);
-  ctx.lineTo(-fw*0.4, -fw*0.2);
-  ctx.lineTo(0, -fw*0.15);
-  ctx.lineTo(fw*0.4, -fw*0.2);
-  ctx.lineTo(fw*0.5, -fw*0.6);
+  ctx.moveTo(-fw*0.40,  fw*0.06);
+  ctx.lineTo( fw*0.40,  fw*0.06);
+  ctx.lineTo( fw*0.52,  fw*0.32);
+  ctx.lineTo( fw*0.30,  fw*0.74);
+  ctx.lineTo( 0,        fw*0.84);
+  ctx.lineTo(-fw*0.30,  fw*0.74);
+  ctx.lineTo(-fw*0.52,  fw*0.32);
+  ctx.closePath();
   ctx.fill();
 
-  // Targeting Reticle
-  ctx.rotate(frame * 0.05);
-  ctx.strokeStyle = '#00ff00';
-  ctx.lineWidth   = 2;
-  ctx.beginPath(); ctx.arc(0, 0, fw*0.15, 0, Math.PI*2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(-fw*0.2, 0); ctx.lineTo(fw*0.2, 0); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(0, -fw*0.2); ctx.lineTo(0, fw*0.2); ctx.stroke();
-
+  // ── V-Fin Antenna (Gold Chrome) ─────────────────────
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur  = 18 * scale;
+  const vfG = ctx.createLinearGradient(-fw*0.52, -fw*0.65, fw*0.52, -fw*0.20);
+  vfG.addColorStop(0,   '#fff7b0');
+  vfG.addColorStop(0.3, '#ffcc00');
+  vfG.addColorStop(0.5, '#aa7700');
+  vfG.addColorStop(0.8, '#ffee55');
+  ctx.fillStyle = vfG;
+  ctx.beginPath();
+  ctx.moveTo(0,       -fw*0.28);
+  ctx.lineTo(-fw*0.54,-fw*0.64);
+  ctx.lineTo(-fw*0.46,-fw*0.22);
+  ctx.lineTo(0,       -fw*0.16);
+  ctx.lineTo( fw*0.46,-fw*0.22);
+  ctx.lineTo( fw*0.54,-fw*0.64);
+  ctx.closePath();
+  ctx.fill();
+  
   ctx.restore();
 }
 
-// ----------------------------------------------------
-// 3. GEEKS (Frau Koujiro Digital Aura)
-// ----------------------------------------------------
-function drawFrauGeeks(lms, fw, euler){
+// ════════════════════════════════════════════════════════
+// 3. GEEKS — Frau Koujiro Digital Aura (RGB Aberration)
+// ════════════════════════════════════════════════════════
+function drawFrauGeeks(lms, fw, euler) {
   const leftEye  = P(lms, 33);
-  const rightEye = P(lms, 263);
   const nose     = P(lms, 4);
   const scale    = fw / 150;
 
-  // Add particles (FIX 2: particles is now a proper array)
-  if(Math.random() < 0.15) {
+  if (Math.random() < 0.25) {
     particles.push({
       text: frauQuotes[Math.floor(Math.random() * frauQuotes.length)],
-      x: nose.x + (Math.random() - 0.5) * fw * 2,
-      y: nose.y + fw,
-      vy: -1 - Math.random() * 2,
-      life: 120,
-      maxLife: 120
+      x: nose.x + (Math.random() - 0.5) * fw * 2.5,
+      y: nose.y + fw * 1.5,
+      vy: -1.5 - Math.random() * 3,
+      life: 100, maxLife: 100
     });
   }
 
-  // Chromatic Aberration & Terminal Wireframes
   ctx.save();
   ctx.translate(nose.x, leftEye.y);
   ctx.rotate(euler.roll);
 
-  ctx.shadowBlur = 15;
+  const lensW = fw * 0.42;
+  const lensH = fw * 0.23;
+  const lensR = fw * 0.045;
+  const lensY = -fw * 0.07;
+  const lL    = -fw * 0.49; 
+  const lR    =  fw * 0.07; 
 
-  // Shift Red
-  ctx.shadowColor = '#ff0000'; ctx.strokeStyle = 'rgba(255,0,0,0.8)';
-  drawRetroGlasses(fw, scale, -2);
-  // Shift Blue
-  ctx.shadowColor = '#0000ff'; ctx.strokeStyle = 'rgba(0,0,255,0.8)';
-  drawRetroGlasses(fw, scale, 2);
-  // Main Green
-  ctx.shadowColor = '#00ff00'; ctx.strokeStyle = '#00ff00';
-  ctx.lineWidth   = 3 * scale;
-  drawRetroGlasses(fw, scale, 0);
+  const drawGlassPath = (xOff, yOff) => {
+    ctx.beginPath();
+    ctx.roundRect(lL + xOff, lensY - lensH/2 + yOff, lensW, lensH, lensR);
+    ctx.roundRect(lR + xOff, lensY - lensH/2 + yOff, lensW, lensH, lensR);
+    ctx.moveTo(lL + xOff + lensW, lensY + yOff);
+    ctx.lineTo(lR + xOff,         lensY + yOff);
+    ctx.moveTo(lL + xOff,         lensY + yOff);
+    ctx.lineTo(lL + xOff - fw*0.17, lensY + fw*0.05 + yOff);
+    ctx.moveTo(lR + xOff + lensW, lensY + yOff);
+    ctx.lineTo(lR + xOff + lensW + fw*0.17, lensY + fw*0.05 + yOff);
+    ctx.stroke();
+  };
+
+  // Chromatic Aberration using Screen Blending
+  ctx.globalCompositeOperation = 'screen';
+  ctx.lineWidth   = 3.5 * scale;
+
+  // Red
+  ctx.strokeStyle = 'rgba(255,0,0,0.9)';
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur  = 10 * scale;
+  drawGlassPath(-4 * scale, 0);
+
+  // Blue
+  ctx.strokeStyle = 'rgba(0,80,255,0.9)';
+  ctx.shadowColor = '#0050ff';
+  drawGlassPath(4 * scale, 0);
+
+  // Green (Core)
+  ctx.strokeStyle = 'rgba(0,255,80,1.0)';
+  ctx.shadowColor = '#00ff50';
+  ctx.shadowBlur  = 20 * scale;
+  drawGlassPath(0, 0);
+
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.shadowBlur = 0;
+
+  // Dark tinted fill
+  ctx.fillStyle = 'rgba(0,15,5,0.7)';
+  ctx.beginPath();
+  ctx.roundRect(lL, lensY - lensH/2, lensW, lensH, lensR);
+  ctx.roundRect(lR, lensY - lensH/2, lensW, lensH, lensR);
+  ctx.fill();
+
+  // Bright CRT Scanline sweep
+  const scanOffset = (frame * 3.5) % lensH;
+  ctx.fillStyle = 'rgba(200,255,220,0.4)';
+  ctx.shadowColor = '#00ff50';
+  ctx.shadowBlur = 10 * scale;
+  ctx.fillRect(lL, lensY - lensH/2 + scanOffset, lensW, 3 * scale);
+  ctx.fillRect(lR, lensY - lensH/2 + scanOffset, lensW, 3 * scale);
+  ctx.shadowBlur = 0;
 
   ctx.restore();
-
-  // Occasional Glitch Slice
-  if(Math.random() < 0.05) {
-    const gy = Math.random() * canvas.height;
-    const gh = 10 + Math.random() * 20;
-    const gx = (Math.random() - 0.5) * 40;
-    ctx.drawImage(canvas, 0, gy, canvas.width, gh, gx, gy, canvas.width, gh);
-  }
-}
-
-function drawRetroGlasses(fw, scale, xOff) {
-  ctx.beginPath();
-  ctx.rect(-fw*0.45 + xOff, -fw*0.15, fw*0.4, fw*0.2); // Left lens
-  ctx.rect( fw*0.05 + xOff, -fw*0.15, fw*0.4, fw*0.2); // Right lens
-  ctx.moveTo(-fw*0.05 + xOff, -fw*0.05); ctx.lineTo(fw*0.05 + xOff, -fw*0.05); // Bridge
-  ctx.stroke();
 }
 
 function updateParticles() {
-  ctx.font = "bold 16px 'Share Tech Mono'";
-  for(let i = particles.length - 1; i >= 0; i--) {
-    let p = particles[i];
+  ctx.font = `bold 18px 'Share Tech Mono'`;
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
     p.y += p.vy;
-    p.x += Math.sin(frame * 0.1 + p.life) * 0.5;
+    p.x += Math.sin(frame * 0.1 + p.life) * 1.5; // Wobble
     p.life--;
-
-    ctx.fillStyle = `rgba(0, 255, 0, ${p.life / p.maxLife})`;
+    const a = p.life / p.maxLife;
+    ctx.shadowColor = `rgba(0,255,80,${a * 0.8})`;
+    ctx.shadowBlur  = 10;
+    ctx.fillStyle   = `rgba(0,255,80,${a})`;
     ctx.fillText(p.text, p.x, p.y);
-
-    if(p.life <= 0) particles.splice(i, 1);
+    if (p.life <= 0) particles.splice(i, 1);
   }
+  ctx.shadowBlur = 0;
 }
 
-// ----------------------------------------------------
-// 4. SYSTEM (Kimijima Report Takeover)
-// ----------------------------------------------------
+// ════════════════════════════════════════════════════════
+// 4. SYSTEM — Kimijima Report Takeover
+// ════════════════════════════════════════════════════════
 function drawKimijimaReport(W, H) {
-  const cx = W / 2, cy = H / 2;
+  const cx = W / 2, cy = H * 0.46;
+  const t  = performance.now() / 1000;
+  const pulseAlpha = 0.6 + 0.4 * Math.sin(t * Math.PI * 1.5);
 
-  // Pulsing Alpha
-  const pulseAlpha = 0.5 + 0.5 * Math.sin(performance.now() / 200);
+  ctx.font      = "12px 'Share Tech Mono'";
+  ctx.fillStyle = `rgba(255,30,30,0.65)`;
+  ctx.shadowColor = 'rgba(255,0,0,0.8)';
+  ctx.shadowBlur = 8;
+  
+  reportY -= 1.2;
+  if (reportY < -reportLines.length * 25) reportY = H;
 
-  // Procedural Redacted Text
-  ctx.font      = "10px 'Share Tech Mono'";
-  ctx.fillStyle = `rgba(255, 50, 50, 0.6)`;
-  reportY -= 1;
-  if(reportY < -reportLines.length * 20) reportY = H;
-
-  for(let i = 0; i < reportLines.length; i++) {
+  for (let i = 0; i < reportLines.length; i++) {
     let text = reportLines[i];
-    if(Math.random() < 0.1) text = text.replace(/[a-zA-Z]/g, '█');
-    ctx.fillText(text, 40,       reportY + (i * 20));
-    ctx.fillText(text, W/2 + 40, reportY + (i * 20) - H/2);
+    if (Math.random() < 0.1) text = text.replace(/[a-zA-Z]/g, '█');
+    ctx.fillText(text, 36, reportY + i * 25);
+    ctx.fillText(text, W/2 + 36, reportY + i * 25 - H * 0.48);
   }
 
-  // Giant Red Power Symbol
   ctx.save();
   ctx.translate(cx, cy);
+
+  ctx.save();
+  ctx.rotate(t * 0.5);
+  ctx.strokeStyle = `rgba(255,0,0,${0.4 * pulseAlpha})`;
+  ctx.lineWidth   = 3;
+  ctx.beginPath();
+  ctx.arc(0, 0, 140, 0, Math.PI*2);
+  ctx.stroke();
+  for (let tk = 0; tk < 60; tk++) {
+    const ang = (tk / 60) * Math.PI * 2;
+    const r1  = tk % 3 === 0 ? 125 : 132;
+    ctx.strokeStyle = `rgba(255,50,50,${(tk % 3 === 0 ? 0.9 : 0.5) * pulseAlpha})`;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(ang)*r1,  Math.sin(ang)*r1);
+    ctx.lineTo(Math.cos(ang)*145, Math.sin(ang)*145);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Power symbol
+  ctx.strokeStyle = `rgba(255,20,20,${pulseAlpha})`;
   ctx.shadowColor = '#ff0000';
-  ctx.shadowBlur  = 30 * pulseAlpha;
-  ctx.strokeStyle = `rgba(255, 0, 0, ${pulseAlpha})`;
-  ctx.lineWidth   = 12;
+  ctx.shadowBlur  = 40 * pulseAlpha;
+  ctx.lineWidth   = 14;
   ctx.lineCap     = 'round';
-
   ctx.beginPath();
-  ctx.arc(0, 0, 80, -Math.PI * 0.35, Math.PI * 1.35);
+  ctx.arc(0, 0, 78, -Math.PI*0.35, Math.PI*1.35);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, -25); ctx.lineTo(0, -95);
   ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(0, -20);
-  ctx.lineTo(0, -90);
-  ctx.stroke();
-
-  ctx.font      = "bold 24px 'Share Tech Mono'";
-  ctx.textAlign = "center";
-  ctx.fillStyle = `rgba(255, 50, 50, ${pulseAlpha})`;
-  ctx.fillText("WARNING: SYSTEM CORRUPTION", 0, 140);
+  ctx.textAlign   = 'center';
+  ctx.fillStyle   = `rgba(255,50,50,${pulseAlpha})`;
+  ctx.font        = "bold 26px 'Share Tech Mono'";
+  ctx.fillText('WARNING: SYSTEM CORRUPTION', 0, 165);
+  
   ctx.restore();
 }
 </script>
