@@ -1,224 +1,1136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-<title>AIRA — IRUO SYSTEM</title>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>AIRA — AR Overlay System</title>
 <style>
-html,body{
-  margin:0;
-  padding:0;
-  overflow:hidden;
-  background:#000409;
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+:root {
+  --cyan: #00F5FF;
+  --cyan2: #00B4D8;
+  --pink: #FF2D9A;
+  --green: #00FF88;
+  --bg: #000409;
+  --panel: rgba(0, 18, 35, 0.86);
 }
 
-video{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
+* { box-sizing: border-box; }
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--cyan);
 }
 
-#three{
-  position:fixed;
-  inset:0;
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000;
+}
+
+#camera-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+video {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0.01;
+  pointer-events: none;
+}
+
+#output {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}
+
+.corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--cyan);
+  pointer-events: none;
+  z-index: 10;
+}
+.corner::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.tl::before { top: -2px; left: -2px; }
+.tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+.tr::before { top: -2px; right: -2px; }
+.bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+.bl::before { bottom: -2px; left: -2px; }
+.br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+.br::before { bottom: -2px; right: -2px; }
+
+#topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: linear-gradient(to bottom, rgba(0,0,30,0.88), transparent);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.sys-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 5px;
+  text-shadow: 0 0 12px var(--cyan);
+}
+
+.sys-status {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--cyan2);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+#scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--cyan) 30%, rgba(255,255,255,0.9) 50%, var(--cyan) 70%, transparent 100%);
+  animation: sweep 4s linear infinite;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 15;
+}
+@keyframes sweep { from { top: -2px; } to { top: calc(100% + 2px); } }
+
+#info-strip {
+  position: absolute;
+  top: 44px; left: 0; right: 0;
+  height: 22px;
+  background: rgba(0,0,20,0.58);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: rgba(0,245,255,0.55);
+  overflow: hidden;
+  z-index: 19;
+  pointer-events: none;
+  border-bottom: 1px solid rgba(0,245,255,0.08);
+}
+
+#info-scroll {
+  white-space: nowrap;
+  animation: marquee 22s linear infinite;
+}
+@keyframes marquee { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+
+#face-indicator {
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  letter-spacing: 3px;
+  padding: 3px 10px;
+  border: 1px solid var(--green);
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+  box-shadow: 0 0 8px rgba(0,255,136,0.2);
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 20;
+  pointer-events: none;
+}
+#face-indicator.on { opacity: 1; }
+
+#bottom-panel {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 10px 12px 14px;
+  background: linear-gradient(to top, rgba(0,0,20,0.96) 60%, transparent);
+  z-index: 20;
+}
+
+.panel-label {
+  font-size: 8px;
+  letter-spacing: 4px;
+  color: var(--cyan2);
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+#costume-grid {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cBtn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--cyan);
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+  min-width: 80px;
+  text-align: center;
+  white-space: nowrap;
+}
+.cBtn.active {
+  background: rgba(0, 245, 255, 0.16);
+  border-color: var(--cyan);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(0,245,255,0.32), inset 0 0 8px rgba(0,245,255,0.08);
+  text-shadow: 0 0 8px var(--cyan);
+}
+.cBtn .icon { display:block; font-size:16px; margin-bottom:2px; }
+
+#loading {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  gap: 24px;
+  padding: 24px;
+  text-align: center;
+}
+
+.load-ring {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.load-ring::before, .load-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.load-ring::before {
+  border-top-color: var(--cyan);
+  border-right-color: var(--cyan);
+  animation: spin 0.8s linear infinite;
+}
+.load-ring::after {
+  inset: 8px;
+  border-bottom-color: var(--pink);
+  border-left-color: var(--pink);
+  animation: spin 1.2s linear infinite reverse;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.load-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 8px;
+  text-shadow: 0 0 20px var(--cyan);
+}
+
+#load-msg {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--cyan2);
+  min-height: 16px;
+}
+
+.load-bar-wrap {
+  width: 240px;
+  height: 2px;
+  background: rgba(0,245,255,0.1);
+  border: 1px solid rgba(0,245,255,0.2);
+}
+#load-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  transition: width 0.25s ease;
+}
+
+#startBtn {
+  margin-top: 8px;
+  padding: 12px 24px;
+  background: var(--cyan);
+  border: none;
+  color: #001018;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0,245,255,0.4);
+}
+
+#cam-error {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #ff4466;
+  font-size: 12px;
+  letter-spacing: 2px;
+  z-index: 30;
+  background: rgba(0,0,0,0.82);
+  text-align: center;
+  padding: 20px;
+}
+#cam-error .err-icon { font-size: 40px; }
+
+@media (max-width: 480px) {
+  .sys-title { font-size: 11px; letter-spacing: 3px; }
+  .sys-status { gap: 10px; font-size: 8px; }
+  .cBtn { min-width: 74px; padding: 7px 12px; }
 }
 </style>
-
 </head>
-
 <body>
+<div id="app">
+  <div id="camera-wrap">
+    <video id="vid" playsinline muted autoplay></video>
+    <canvas id="output"></canvas>
 
-<video id="video" autoplay playsinline muted></video>
-<div id="three"></div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
 
+    <div id="scanline"></div>
+
+    <div id="topbar">
+      <div class="sys-title">◈ AIRA SYS</div>
+      <div class="sys-status">
+        <span><span class="dot"></span></span>
+        <span>CAM ACTIVE</span>
+        <span id="fps-counter">-- FPS</span>
+      </div>
+    </div>
+
+    <div id="info-strip">
+      <div id="info-scroll">
+        AIRA AUGMENTED IDENTITY REALITY SYSTEM v2.047 ◈ FACE MESH ENGINE ◈ 468 LANDMARKS ◈ SELECT OVERLAY MODE BELOW ◈ TRACKING ACTIVE ◈
+      </div>
+    </div>
+
+    <div id="face-indicator">◉ FACE LOCKED</div>
+
+    <div id="cam-error">
+      <div class="err-icon">📵</div>
+      <div>CAMERA ACCESS FAILED</div>
+      <div id="cam-error-text" style="font-size:9px;color:#ff88aa;letter-spacing:1px;line-height:1.6;"></div>
+    </div>
+  </div>
+
+  <div id="bottom-panel">
+    <div class="panel-label">◈ SELECT OVERLAY MODE</div>
+    <div id="costume-grid">
+      <button class="cBtn active" data-costume="none" onclick="pick(this)"><span class="icon">🔳</span>NONE</button>
+      <button class="cBtn" data-costume="catgirl" onclick="pick(this)"><span class="icon">🐱</span>CAT GIRL</button>
+      <button class="cBtn" data-costume="bunny" onclick="pick(this)"><span class="icon">🐰</span>BUNNY</button>
+      <button class="cBtn" data-costume="witch" onclick="pick(this)"><span class="icon">🧙</span>WITCH</button>
+      <button class="cBtn" data-costume="angel" onclick="pick(this)"><span class="icon">😇</span>ANGEL</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading">
+  <div class="load-ring"></div>
+  <div class="load-logo">AIRA</div>
+  <div id="load-msg">TAP TO INITIALIZE CAMERA</div>
+  <button id="startBtn">START AIRA</button>
+  <div class="load-bar-wrap"><div id="load-bar"></div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 <script>
-let scene, camera, renderer;
-let raycaster, mouse;
+const vid = document.getElementById('vid');
+const canvas = document.getElementById('output');
+const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+const loadEl = document.getElementById('loading');
+const loadMsg = document.getElementById('load-msg');
+const loadBar = document.getElementById('load-bar');
+const faceInd = document.getElementById('face-indicator');
+const fpsEl = document.getElementById('fps-counter');
+const camErr = document.getElementById('cam-error');
+const camErrText = document.getElementById('cam-error-text');
 
-let button;
-let clickable = [];
+let costume = 'none';
+let frame = 0;
+let glitch = 0;
+let lastTime = performance.now();
+let fpsSmooth = 0;
+let ready = false;
+let activeStream = null;
+let mirrorX = true;
 
-let faceMesh;
-let video;
-
-/* =========================
-   START CAMERA + SYSTEM
-========================= */
-async function start(){
-
-  video = document.getElementById('video');
-
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:"user"},
-    audio:false
-  });
-
-  video.srcObject = stream;
-  await video.play();
-
-  await loadFaceMesh();
-
-  initThree();
-  loop();
+function setLoad(pct, msg) {
+  loadBar.style.width = pct + '%';
+  loadMsg.textContent = msg;
 }
 
-/* =========================
-   FIXED MEDIAPIPE LOAD
-   (IMPORTANT CHANGE)
-========================= */
-async function loadFaceMesh(){
-
-  await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js");
-  await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js");
-  await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js");
-  await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js");
-
-  faceMesh = new window.FaceMesh.FaceMesh({
-    locateFile: (file) =>
-      `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-  });
-
-  faceMesh.setOptions({
-    maxNumFaces:1,
-    refineLandmarks:true,
-    minDetectionConfidence:0.5,
-    minTrackingConfidence:0.5
-  });
-
-  faceMesh.onResults(onFace);
+function pick(btn) {
+  document.querySelectorAll('.cBtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  costume = btn.dataset.costume;
+  glitch = 10;
 }
 
-/* =========================
-   THREE INIT
-========================= */
-function initThree(){
-
-  scene = new THREE.Scene();
-
-  camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    1000
-  );
-
-  camera.position.z = 5;
-
-  renderer = new THREE.WebGLRenderer({alpha:true});
-  renderer.setSize(window.innerWidth, window.innerHeight);
-
-  document.getElementById("three").appendChild(renderer.domElement);
-
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-
-  createButton();
-
-  window.addEventListener("click", onClick);
+function resizeCanvas() {
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = Math.floor(window.innerWidth * dpr);
+  canvas.height = Math.floor(window.innerHeight * dpr);
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
 }
 
-/* =========================
-   3D FLOATING BUTTON
-========================= */
-function createButton(){
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 128;
+function P(lms, i) {
+  const p = lms[i];
+  return {
+    x: mirrorX ? (1 - p.x) * canvas.width : p.x * canvas.width,
+    y: p.y * canvas.height
+  };
+}
+function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+function lerp(a, b, t) { return a + (b - a) * t; }
 
-  const ctx = canvas.getContext("2d");
-
-  ctx.fillStyle = "#00F5FF";
-  ctx.fillRect(0,0,512,128);
-
-  ctx.fillStyle = "#000";
-  ctx.font = "bold 40px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("START SYSTEM",256,64);
-
-  const texture = new THREE.CanvasTexture(canvas);
-
-  const mat = new THREE.SpriteMaterial({map:texture});
-
-  button = new THREE.Sprite(mat);
-  button.scale.set(2.5,0.7,1);
-  button.position.set(0,0,2);
-
-  button.userData.clickable = true;
-
-  clickable.push(button);
-  scene.add(button);
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+  ctx.lineTo(x + w, y + h - rr);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  ctx.lineTo(x + rr, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+  ctx.lineTo(x, y + rr);
+  ctx.quadraticCurveTo(x, y, x + rr, y);
+  ctx.closePath();
 }
 
-/* =========================
-   FACE UPDATE
-========================= */
-function onFace(results){
+function star(ctx, cx, cy, r, pts) {
+  ctx.beginPath();
+  for (let i = 0; i < pts * 2; i++) {
+    const a = (i * Math.PI) / pts - Math.PI / 2;
+    const rr = (i % 2 === 0) ? r : r * 0.42;
+    ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
 
-  if(!results.multiFaceLandmarks) return;
+function drawFurEar(x, y, size, tilt, accent, inner, baseShadow, ctx2) {
+  ctx2.save();
+  ctx2.translate(x, y);
+  ctx2.rotate(tilt);
 
-  const lm = results.multiFaceLandmarks[0];
+  const w = size * 0.82;
+  const h = size * 1.35;
+  const g = ctx2.createLinearGradient(0, -h * 0.15, 0, h);
+  g.addColorStop(0, accent);
+  g.addColorStop(0.65, baseShadow);
+  g.addColorStop(1, '#12080d');
 
-  const eyeL = lm[33];
-  const eyeR = lm[263];
+  ctx2.shadowColor = 'rgba(0,0,0,0.35)';
+  ctx2.shadowBlur = 12;
 
-  const x = ((eyeL.x + eyeR.x)/2 - 0.5) * 6;
-  const y = -((eyeL.y + eyeR.y)/2 - 0.5) * 8;
+  ctx2.fillStyle = g;
+  ctx2.beginPath();
+  ctx2.moveTo(0, -h * 0.18);
+  ctx2.lineTo(-w * 0.55, h * 0.72);
+  ctx2.lineTo(0, h * 0.96);
+  ctx2.lineTo(w * 0.55, h * 0.72);
+  ctx2.closePath();
+  ctx2.fill();
 
-  if(button){
-    button.position.x = x;
-    button.position.y = y;
+  ctx2.shadowBlur = 0;
+  ctx2.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx2.lineWidth = 1.25;
+  ctx2.stroke();
+
+  const innerG = ctx2.createLinearGradient(0, 0, 0, h);
+  innerG.addColorStop(0, inner);
+  innerG.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx2.fillStyle = innerG;
+  ctx2.globalAlpha = 0.92;
+  ctx2.beginPath();
+  ctx2.moveTo(0, h * 0.06);
+  ctx2.lineTo(-w * 0.23, h * 0.58);
+  ctx2.lineTo(0, h * 0.82);
+  ctx2.lineTo(w * 0.23, h * 0.58);
+  ctx2.closePath();
+  ctx2.fill();
+
+  ctx2.globalAlpha = 0.55;
+  ctx2.strokeStyle = 'rgba(255,255,255,0.45)';
+  ctx2.lineWidth = 1;
+  for (let i = 1; i <= 4; i++) {
+    const t = i / 5;
+    ctx2.beginPath();
+    ctx2.moveTo(0, h * 0.02);
+    ctx2.lineTo(lerp(0, -w * 0.43, t), lerp(h * 0.04, h * 0.7, t));
+    ctx2.stroke();
+    ctx2.beginPath();
+    ctx2.moveTo(0, h * 0.02);
+    ctx2.lineTo(lerp(0, w * 0.43, t), lerp(h * 0.04, h * 0.7, t));
+    ctx2.stroke();
+  }
+
+  ctx2.restore();
+}
+
+function drawLaceBow(cx, cy, w, h, col) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const g = ctx.createLinearGradient(-w, -h, w, h);
+  g.addColorStop(0, '#ffffff');
+  g.addColorStop(0.5, col);
+  g.addColorStop(1, '#3b1b66');
+  ctx.fillStyle = g;
+  ctx.shadowColor = col;
+  ctx.shadowBlur = 10;
+  ctx.globalAlpha = 0.92;
+
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-w, -h * 0.62);
+  ctx.lineTo(-w * 0.95, h * 0.62);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(w, -h * 0.62);
+  ctx.lineTo(w * 0.95, h * 0.62);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#2a1048';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, w * 0.2, h * 0.28, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.globalAlpha = 0.22;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(0, 0, w * 0.65, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+const faceMesh = new FaceMesh({
+  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+});
+
+faceMesh.setOptions({
+  maxNumFaces: 2,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6
+});
+
+faceMesh.onResults(onResults);
+
+async function startCamera() {
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('getUserMedia is not supported in this browser.');
+    }
+
+    setLoad(30, 'REQUESTING CAMERA ACCESS...');
+    activeStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: 'user' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
+
+    vid.srcObject = activeStream;
+    vid.setAttribute('playsinline', true);
+    vid.muted = true;
+    mirrorX = true;
+
+    await new Promise((resolve, reject) => {
+      vid.onloadedmetadata = async () => {
+        try {
+          await vid.play();
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      };
+      setTimeout(() => reject(new Error('Camera start timed out.')), 12000);
+    });
+
+    setLoad(65, 'CALIBRATING LANDMARK TRACKER...');
+    requestAnimationFrame(processFrame);
+  } catch (err) {
+    console.error(err);
+    loadEl.style.display = 'none';
+    camErr.style.display = 'flex';
+    camErrText.textContent = err.message || String(err);
   }
 }
 
-/* =========================
-   CLICK RAYCAST
-========================= */
-function onClick(e){
+async function processFrame() {
+  try {
+    if (vid.readyState >= 2) {
+      await faceMesh.send({ image: vid });
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  requestAnimationFrame(processFrame);
+}
 
-  mouse.x = (e.clientX/window.innerWidth)*2-1;
-  mouse.y = -(e.clientY/window.innerHeight)*2+1;
+document.getElementById('startBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.textContent = 'STARTING...';
+  await startCamera();
+});
 
-  raycaster.setFromCamera(mouse,camera);
+function onResults(res) {
+  if (!ready) {
+    ready = true;
+    setLoad(100, 'SYSTEM ONLINE');
+    setTimeout(() => { loadEl.style.display = 'none'; }, 550);
+  }
 
-  const hits = raycaster.intersectObjects(clickable);
+  const W = canvas.width;
+  const H = canvas.height;
 
-  if(hits.length > 0){
-    alert("START SYSTEM ACTIVATED");
+  const now = performance.now();
+  const dt = Math.max(1, now - lastTime);
+  lastTime = now;
+  fpsSmooth = fpsSmooth * 0.87 + (1000 / dt) * 0.13;
+  if (frame % 8 === 0) fpsEl.textContent = Math.round(fpsSmooth) + ' FPS';
+
+  ctx.save();
+  ctx.clearRect(0, 0, W, H);
+
+  // Camera frame
+  if (mirrorX) {
+    ctx.save();
+    ctx.translate(W, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(res.image, 0, 0, W, H);
+    ctx.restore();
+  } else {
+    ctx.drawImage(res.image, 0, 0, W, H);
+  }
+
+  // Soft color grade
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = 'rgba(0,12,18,0.06)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'source-over';
+
+  if (glitch > 0) {
+    const alpha = (glitch / 10) * 0.35;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#00F5FF';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    if (glitch > 6) {
+      for (let g = 0; g < 4; g++) {
+        const gy = Math.random() * H;
+        const gh = Math.random() * 10 + 2;
+        ctx.drawImage(
+          res.image,
+          0, gy, W, gh,
+          Math.random() * 12 - 6, gy,
+          W, gh
+        );
+      }
+    }
+    glitch--;
+  }
+
+  const faces = res.multiFaceLandmarks;
+  const hasF = faces && faces.length > 0;
+  faceInd.classList.toggle('on', hasF);
+
+  if (hasF) {
+    for (const lms of faces) renderCostume(lms);
+  }
+
+  drawHUD(W, H, hasF);
+  ctx.restore();
+  frame++;
+}
+
+function renderCostume(lms) {
+  const eyeL = P(lms, 33);
+  const eyeR = P(lms, 263);
+  const eMid = mid(eyeL, eyeR);
+  const chin = P(lms, 152);
+  const brow = P(lms, 10);
+  const nose = P(lms, 4);
+  const cheekL = P(lms, 205);
+  const cheekR = P(lms, 425);
+
+  const fw = dist(P(lms, 234), P(lms, 454));
+  const sc = Math.max(0.45, fw / 200);
+  const dx = eyeR.x - eyeL.x;
+  const dy = eyeR.y - eyeL.y;
+  const ang = Math.atan2(dy, dx);
+
+  switch (costume) {
+    case 'catgirl':
+      drawCatGirl(lms, eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang);
+      break;
+    case 'bunny':
+      drawBunny(lms, eMid, chin, nose, cheekL, cheekR, fw, sc, ang);
+      break;
+    case 'witch':
+      drawWitch(lms, eMid, brow, fw, sc, ang);
+      break;
+    case 'angel':
+      drawAngel(lms, eMid, brow, fw, sc, ang);
+      break;
+    default:
+      drawScan(lms, fw, sc);
+      break;
   }
 }
 
-/* =========================
-   RENDER LOOP
-========================= */
-function loop(){
-  requestAnimationFrame(loop);
-  renderer.render(scene,camera);
-}
-
-/* =========================
-   SCRIPT LOADER
-========================= */
-function loadScript(src){
-  return new Promise((res,rej)=>{
-    const s=document.createElement("script");
-    s.src=src;
-    s.onload=res;
-    s.onerror=rej;
-    document.head.appendChild(s);
+function drawScan(lms, fw, sc) {
+  const groups = [
+    [10, 234, 454],
+    [33, 133, 362],
+    [61, 291, 0],
+    [4, 1, 2]
+  ];
+  ctx.strokeStyle = 'rgba(0,245,255,0.18)';
+  ctx.lineWidth = Math.max(0.6, 0.8 * sc);
+  groups.forEach(([a, b, c]) => {
+    const pa = P(lms, a), pb = P(lms, b), pc = P(lms, c);
+    ctx.beginPath();
+    ctx.moveTo(pa.x, pa.y);
+    ctx.lineTo(pb.x, pb.y);
+    ctx.lineTo(pc.x, pc.y);
+    ctx.closePath();
+    ctx.stroke();
+  });
+  [10, 33, 263, 4, 61, 291, 152, 234, 454].forEach(i => {
+    const p = P(lms, i);
+    ctx.fillStyle = 'rgba(0,245,255,0.55)';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2 * sc, 0, Math.PI * 2);
+    ctx.fill();
   });
 }
 
-start();
+function drawCatGirl(lms, eMid, chin, brow, nose, cheekL, cheekR, fw, sc, ang) {
+  const earSize = fw * 0.34;
+  const earSpread = fw * 0.34;
+  const earY = brow.y - fw * 0.34;
+
+  // soft headband
+  ctx.save();
+  ctx.translate(eMid.x, brow.y);
+  ctx.rotate(ang * 0.18);
+  const bandW = fw * 0.78;
+  const bandH = 11 * sc;
+  const band = ctx.createLinearGradient(-bandW / 2, 0, bandW / 2, 0);
+  band.addColorStop(0, '#291018');
+  band.addColorStop(0.5, '#9d2f56');
+  band.addColorStop(1, '#240c16');
+  ctx.fillStyle = band;
+  ctx.globalAlpha = 0.94;
+  roundRect(ctx, -bandW / 2, -bandH / 2, bandW, bandH, 6 * sc);
+  ctx.fill();
+  ctx.restore();
+
+  drawFurEar(eMid.x - earSpread, earY, earSize, ang - 0.16, '#8e243f', '#ffc6cf', '#3f1220', ctx);
+  drawFurEar(eMid.x + earSpread, earY, earSize, ang + 0.16, '#8e243f', '#ffc6cf', '#3f1220', ctx);
+
+  // inner ear tufts
+  ctx.save();
+  ctx.globalAlpha = 0.55;
+  ctx.strokeStyle = 'rgba(255,230,235,0.8)';
+  ctx.lineWidth = Math.max(1, 1.3 * sc);
+  [ -1, 1 ].forEach(side => {
+    const px = eMid.x + side * earSpread;
+    const py = earY + earSize * 0.65;
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      ctx.moveTo(px, py - i * 2 * sc);
+      ctx.lineTo(px + side * (7 + i * 2) * sc, py - 8 * sc - i * 1.1 * sc);
+      ctx.stroke();
+    }
+  });
+  ctx.restore();
+
+  // cheeks / blush
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  const blush = ctx.createRadialGradient(cheekL.x, cheekL.y, 1, cheekL.x, cheekL.y, fw * 0.12);
+  blush.addColorStop(0, 'rgba(255,138,185,0.85)');
+  blush.addColorStop(1, 'rgba(255,138,185,0)');
+  ctx.fillStyle = blush;
+  ctx.beginPath(); ctx.arc(cheekL.x, cheekL.y, fw * 0.12, 0, Math.PI * 2); ctx.fill();
+  const blush2 = ctx.createRadialGradient(cheekR.x, cheekR.y, 1, cheekR.x, cheekR.y, fw * 0.12);
+  blush2.addColorStop(0, 'rgba(255,138,185,0.85)');
+  blush2.addColorStop(1, 'rgba(255,138,185,0)');
+  ctx.fillStyle = blush2;
+  ctx.beginPath(); ctx.arc(cheekR.x, cheekR.y, fw * 0.12, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  // nose
+  ctx.save();
+  ctx.fillStyle = '#ff7aa9';
+  ctx.shadowColor = '#ff7aa9';
+  ctx.shadowBlur = 4;
+  ctx.beginPath();
+  ctx.arc(nose.x, nose.y, 3.5 * sc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // collar
+  const neckY = chin.y + 18 * sc;
+  const colW = fw * 0.56;
+  const colH = 16 * sc;
+  ctx.save();
+  const col = ctx.createLinearGradient(eMid.x - colW / 2, 0, eMid.x + colW / 2, 0);
+  col.addColorStop(0, '#5d0b2c');
+  col.addColorStop(0.4, '#f63d8a');
+  col.addColorStop(1, '#7a1439');
+  ctx.fillStyle = col;
+  ctx.shadowColor = '#ff5ca0';
+  ctx.shadowBlur = 7;
+  roundRect(ctx, eMid.x - colW / 2, neckY, colW, colH, 5 * sc);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.16)';
+  roundRect(ctx, eMid.x - colW / 2 + 4, neckY + 3, colW - 8, 4, 2);
+  ctx.fill();
+
+  // bell
+  const bellY = neckY + colH + 9 * sc;
+  ctx.fillStyle = '#ffd35c';
+  ctx.shadowColor = '#ffd35c';
+  ctx.shadowBlur = 7;
+  ctx.beginPath();
+  ctx.arc(eMid.x, bellY, 7.5 * sc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#b8860b';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(eMid.x - 5 * sc, bellY);
+  ctx.lineTo(eMid.x + 5 * sc, bellY);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.beginPath();
+  ctx.arc(eMid.x - 2.2 * sc, bellY - 2.2 * sc, 1.6 * sc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // subtle whiskers
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = Math.max(1, 1.2 * sc);
+  [[-1, 0], [0, 0], [1, 0]].forEach((pair, i) => {
+    const off = (i - 1) * 5 * sc;
+    ctx.beginPath();
+    ctx.moveTo(cheekL.x, cheekL.y + off);
+    ctx.lineTo(cheekL.x - fw * 0.34, cheekL.y + off - 2 * sc);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cheekR.x, cheekR.y + off);
+    ctx.lineTo(cheekR.x + fw * 0.34, cheekR.y + off - 2 * sc);
+    ctx.stroke();
+  });
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,245,255,0.6)';
+  ctx.font = `${Math.max(8, 9 * sc)}px 'Share Tech Mono'`;
+  ctx.fillText('[NEKOMIMI PROFILE LOADED]', eMid.x - fw * 0.46, chin.y + fw * 0.34);
+  ctx.restore();
+}
+
+function drawBunny(lms, eMid, chin, nose, cheekL, cheekR, fw, sc, ang) {
+  const earW = fw * 0.18;
+  const earH = fw * 0.9;
+  const spread = fw * 0.27;
+  const earY = eMid.y - fw * 0.44;
+
+  function bunnyEar(x, y, w, h, tilt) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+    ctx.shadowColor = 'rgba(255,255,255,0.25)';
+    ctx.shadowBlur = 10;
+    const g = ctx.createLinearGradient(0, -h * 0.5, 0, h);
+    g.addColorStop(0, '#ffffff');
+    g.addColorStop(0.7, '#f0f0f0');
+    g.addColorStop(1, '#c7c7c7');
+    ctx.fillStyle = g;
+    ctx.globalAlpha = 0.95;
+    roundRect(ctx, -w / 2, -h * 0.05, w, h, w);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255,181,193,0.78)';
+    roundRect(ctx, -w * 0.23, h * 0.06, w * 0.46, h * 0.72, w * 0.24);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(120,120,120,0.22)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  bunnyEar(eMid.x - spread, earY, earW, earH, ang - 0.06);
+  bunnyEar(eMid.x + spread, earY, earW, earH, ang + 0.06);
+
+  // bow / choker
+  const neckY = chin.y + 18 * sc;
+  drawLaceBow(eMid.x, neckY, fw * 0.22, 14 * sc, '#a45cda');
+
+  // soft blush
+  ctx.save();
+  ctx.globalAlpha = 0.16;
+  const g1 = ctx.createRadialGradient(cheekL.x, cheekL.y, 1, cheekL.x, cheekL.y, fw * 0.11);
+  g1.addColorStop(0, 'rgba(255,180,200,0.85)');
+  g1.addColorStop(1, 'rgba(255,180,200,0)');
+  ctx.fillStyle = g1;
+  ctx.beginPath(); ctx.arc(cheekL.x, cheekL.y, fw * 0.11, 0, Math.PI * 2); ctx.fill();
+  const g2 = ctx.createRadialGradient(cheekR.x, cheekR.y, 1, cheekR.x, cheekR.y, fw * 0.11);
+  g2.addColorStop(0, 'rgba(255,180,200,0.85)');
+  g2.addColorStop(1, 'rgba(255,180,200,0)');
+  ctx.fillStyle = g2;
+  ctx.beginPath(); ctx.arc(cheekR.x, cheekR.y, fw * 0.11, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = '#ff9fb6';
+  ctx.beginPath(); ctx.arc(nose.x, nose.y, 3.5 * sc, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = `${Math.max(8, 9 * sc)}px 'Share Tech Mono'`;
+  ctx.fillText('[BUNNY ACCESSORY ONLINE]', eMid.x - fw * 0.43, chin.y + fw * 0.34);
+  ctx.restore();
+}
+
+function drawWitch(lms, eMid, brow, fw, sc, ang) {
+  ctx.save();
+  ctx.translate(eMid.x, brow.y - fw * 0.06);
+  ctx.rotate(ang * 0.16);
+
+  const brimW = fw * 0.92;
+  const brimH = 12 * sc;
+  const hatBaseY = -(fw * 0.18);
+  const hatH = fw * 1.05;
+
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowBlur = 14;
+  const brim = ctx.createLinearGradient(-brimW / 2, 0, brimW / 2, 0);
+  brim.addColorStop(0, '#16001f');
+  brim.addColorStop(0.5, '#3c175f');
+  brim.addColorStop(1, '#16001f');
+  ctx.fillStyle = brim;
+  ctx.beginPath();
+  ctx.ellipse(0, hatBaseY, brimW / 2, brimH, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.shadowBlur = 8;
+  const cone = ctx.createLinearGradient(0, hatBaseY - hatH, 0, hatBaseY);
+  cone.addColorStop(0, '#09000f');
+  cone.addColorStop(1, '#1a052b');
+  ctx.fillStyle = cone;
+  ctx.beginPath();
+  ctx.moveTo(-brimW * 0.13, hatBaseY - 2);
+  ctx.lineTo(brimW * 0.13, hatBaseY - 2);
+  ctx.lineTo(fw * 0.14, hatBaseY - hatH * 0.48);
+  ctx.lineTo(0, hatBaseY - hatH);
+  ctx.lineTo(-fw * 0.11, hatBaseY - hatH * 0.52);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#7b4de2';
+  roundRect(ctx, -brimW * 0.12, hatBaseY - hatH * 0.24, brimW * 0.24, 10 * sc, 2 * sc);
+  ctx.fill();
+  ctx.strokeStyle = '#f0cc62';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(-7 * sc, hatBaseY - hatH * 0.24 + 1.5, 14 * sc, 7.5 * sc);
+  ctx.restore();
+
+  const t = frame * 0.04;
+  const orbitCX = eMid.x;
+  const orbitCY = brow.y - fw * 0.16;
+  [
+    { c: '#ffd35c', p: 0 },
+    { c: '#ff5ca0', p: 2.1 },
+    { c: '#00F5FF', p: 4.2 }
+  ].forEach(({ c, p }) => {
+    const sx = orbitCX + Math.cos(t + p) * fw * 0.62;
+    const sy = orbitCY + Math.sin(t + p) * fw * 0.22;
+    ctx.fillStyle = c;
+    ctx.globalAlpha = 0.85;
+    star(ctx, sx, sy, (2.4 + Math.sin(t * 2 + p) * 0.7) * sc, 4);
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawAngel(lms, eMid, brow, fw, sc, ang) {
+  ctx.save();
+  ctx.translate(eMid.x, brow.y - fw * 0.06);
+  ctx.rotate(ang * 0.08);
+  const haloR = fw * 0.38;
+  const haloCY = brow.y - fw * 0.2;
+
+  // halo
+  const glow = ctx.createRadialGradient(0, 0, haloR * 0.38, 0, 0, haloR * 1.2);
+  glow.addColorStop(0, 'rgba(255,220,90,0.0)');
+  glow.addColorStop(0.5, 'rgba(255,220,90,0.22)');
+  glow.addColorStop(1, 'rgba(255,220,90,0.0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.ellipse(0, haloCY - (brow.y - fw * 0.06), haloR * 1.4, haloR * 0.48, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#ffd35c';
+  ctx.lineWidth = 4 * sc;
+  ctx.shadowColor = '#ffd35c';
+  ctx.shadowBlur = 14;
+  ctx.beginPath();
+  ctx.ellipse(0, haloCY - (brow.y - fw * 0.06), haloR, haloR * 0.28, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  // wings
+  ctx.save();
+  ctx.translate(eMid.x, brow.y + fw * 0.05);
+  ctx.rotate(ang * 0.05);
+  const wingW = fw * 0.76;
+  const wingH = fw * 0.52;
+
+  ['left', 'right'].forEach(side => {
+    const sign = side === 'left' ? -1 : 1;
+    ctx.save();
+    ctx.scale(sign, 1);
+    const g = ctx.createRadialGradient(wingW * 0.3, 0, 0, wingW * 0.35, 0, wingW * 0.8);
+    g.addColorStop(0, 'rgba(255,255,255,0.55)');
+    g.addColorStop(1, 'rgba(220,220,255,0)');
+    ctx.fillStyle = g;
+    ctx.shadowColor = 'rgba(255,255,255,0.4)';
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.moveTo(12 * sc, 0);
+    ctx.bezierCurveTo(wingW * 0.36, -wingH * 0.6, wingW * 0.85, -wingH * 0.25, wingW * 0.86, wingH * 0.1);
+    ctx.bezierCurveTo(wingW * 0.7, wingH * 0.42, wingW * 0.28, wingH * 0.32, 12 * sc, wingH * 0.08);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(220,230,255,0.36)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) {
+      const t = i / 5;
+      ctx.beginPath();
+      ctx.moveTo(12 * sc + t * wingW * 0.22, 0);
+      ctx.quadraticCurveTo(wingW * (0.28 + t * 0.38), -wingH * 0.2, wingW * (0.36 + t * 0.35), wingH * 0.05);
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+  ctx.restore();
+
+  const t = frame * 0.045;
+  for (let i = 0; i < 6; i++) {
+    const a = t + i * Math.PI / 3;
+    const px = eMid.x + Math.cos(a) * haloR;
+    const py = haloCY + Math.sin(a) * haloR * 0.28;
+    ctx.fillStyle = '#ffd35c';
+    ctx.globalAlpha = 0.8;
+    star(ctx, px, py, (1.4 + Math.sin(t * 3 + i) * 0.5) * 3 * sc, 4);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawHUD(W, H, hasF) {
+  const fsz = Math.max(9, W * 0.016);
+  ctx.font = `${fsz}px 'Share Tech Mono'`;
+  ctx.fillStyle = 'rgba(0,245,255,0.56)';
+  ctx.fillText(`FRAME : ${String(frame).padStart(7, '0')}`, 12, H - 28);
+  ctx.fillText(`OVERLAY: ${costume.toUpperCase()}`, 12, H - 14);
+
+  const lockX = W - Math.min(140, W * 0.16);
+  ctx.fillStyle = hasF ? '#00FF88' : '#FF4466';
+  ctx.fillText(hasF ? '◉ FACE LOCKED' : '◎ SCANNING...', lockX, 68);
+
+  const cx = W / 2, cy = H / 2;
+  ctx.strokeStyle = 'rgba(0,245,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx - 20, cy); ctx.lineTo(cx + 20, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy - 20); ctx.lineTo(cx, cy + 20); ctx.stroke();
+}
 </script>
-
 </body>
 </html>
