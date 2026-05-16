@@ -210,7 +210,7 @@ function onResults(res){
   }
 
   if(res.multiFaceLandmarks && res.multiFaceLandmarks.length > 0){
-    const lms = res.multiFaceLandmarks;
+    const lms = res.multiFaceLandmarks[0];
     const euler = getEulerAngles(lms);
     const fw = Math.hypot(P(lms,234).x - P(lms,454).x, P(lms,234).y - P(lms,454).y);
     
