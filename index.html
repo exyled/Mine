@@ -168,9 +168,15 @@ function getEulerAngles(lms) {
   const leftT = P(lms, 234); 
   const rightT = P(lms, 454); 
   
-  const dx = rightT.x - leftT.x;
-  const dy = rightT.y - leftT.y;
-  const dz = rightT.z - leftT.z;
+// Before — direction runs right-of-screen → left-of-screen, giving roll ≈ π
+const dx = rightT.x - leftT.x;
+const dy = rightT.y - leftT.y;
+const dz = rightT.z - leftT.z;
+
+// After — direction runs left-of-screen → right-of-screen, giving roll ≈ 0 for an upright face
+const dx = leftT.x - rightT.x;
+const dy = leftT.y - rightT.y;
+const dz = leftT.z - rightT.z;
   
   const roll = Math.atan2(dy, dx);
   const yaw = Math.asin(dz / Math.hypot(dx, dy, dz));
