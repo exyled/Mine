@@ -47,12 +47,14 @@ video{ position:absolute; width:1px; height:1px; opacity:.01; pointer-events:non
 @keyframes sweep{from{top:-10px}to{top:110%}}
 
 #bottom-panel{ position:absolute; left:0;right:0;bottom:0; padding:15px; background:rgba(0,10,20,.85); z-index:20; border-top:1px solid rgba(127,232,255,.2); }
+#camera-controls{ display:flex; justify-content:center; margin-bottom:10px; }
 #costume-grid{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 .cBtn{
   appearance:none; font-family:'Share Tech Mono', monospace; font-size:11px; letter-spacing:2px;
   color:var(--cyan); background:transparent; border:1px solid var(--cyan); padding:10px 15px;
   cursor:pointer; transition:all.2s ease; text-transform:uppercase; border-radius:4px;
 }
+.cBtn:disabled{ opacity:0.35; cursor:not-allowed; }
 .cBtn.active{ background:var(--cyan); color:#000; box-shadow:0 0 15px rgba(127,232,255,.6); }
 
 #loading{
@@ -81,6 +83,9 @@ video{ position:absolute; width:1px; height:1px; opacity:.01; pointer-events:non
     </div>
   </div>
   <div id="bottom-panel">
+    <div id="camera-controls">
+      <button class="cBtn" id="camToggle" disabled>⇄ REAR CAM</button>
+    </div>
     <div id="costume-grid">
       <button class="cBtn active" data-costume="none">NONE</button>
       <button class="cBtn" data-costume="catgirl">MEIDO</button>
@@ -110,16 +115,30 @@ let lastTime = performance.now();
 let ready = false;
 let mirrorX = true;
 
-// Frau's Particle System
+// FIX 2: particles must be an array, not a number
 let particles = [];
-const frauQuotes = ['Duhuhu...', '0/10...', 'fwiw', 'tbh'];
 
-// Kimijima Report Text
-let reportY = 0;
-const reportLines = [
-  "Warnings are meaningless. It cannot be stopped unless they are prosecuted."
+// FIX 3: frauQuotes must be an array of strings
+const frauQuotes = [
+  'agepoyo', 'jajaja', 'NEET PRIDE', 'boo', 'ORE TUEEE',
+  'www', 'kawaii', 'riajuu go explode', 'flag secured', '乙女理論'
 ];
 
+// FIX 4: reportLines must be an array of strings
+const reportLines = [
+  'KIMIJIMA REPORT NO.1 — CLASSIFIED',
+  'SUBJECT: [REDACTED] PROTOCOL ACTIVATED',
+  'DATE: ██/██/20██',
+  'AUTHORIZED EYES ONLY',
+  'STATUS: SYSTEM OVERRIDE IN PROGRESS',
+  'TARGET ACQUIRED — MONITORING ACTIVE',
+  'WARNING: UNAUTHORIZED ACCESS DETECTED',
+  'UPLINK TO AMICA SATELLITE: ESTABLISHED',
+  'SOLAR FLARE EVENT — T-MINUS UNKNOWN',
+  'HUMAN FACTOR COEFFICIENT: 0.000██',
+  'REPORT CONTINUES ON NEXT PAGE...',
+  '█████████████████████████████████',
+];
 
 function resizeCanvas(){
   const dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -131,9 +150,9 @@ resizeCanvas();
 
 function P(lms, i){
   return {
-    x: mirrorX? (1 - lms[i].x) * canvas.width : lms[i].x * canvas.width,
+    x: mirrorX ? (1 - lms[i].x) * canvas.width : lms[i].x * canvas.width,
     y: lms[i].y * canvas.height,
-    z: lms[i].z * canvas.width 
+    z: lms[i].z * canvas.width
   };
 }
 
@@ -141,12 +160,43 @@ const faceMesh = new FaceMesh({ locateFile: file => `https://cdn.jsdelivr.net/np
 faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 faceMesh.onResults(onResults);
 
+// Camera management
+let facingMode = 'user';
+let currentStream = null;
+
+async function startCamera(mode) {
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: mode, width: 1280, height: 720 }
+    });
+    vid.srcObject = stream;
+    currentStream = stream;
+    // FIX: mirror front-facing camera only; rear camera should not be mirrored
+    mirrorX = (mode === 'user');
+    await vid.play();
+  } catch (err) {
+    console.error('Camera error:', err);
+  }
+}
+
 document.getElementById('startBtn').addEventListener('click', async () => {
   document.getElementById('startBtn').textContent = 'CONNECTING...';
-  const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
-  vid.srcObject = stream;
-  vid.play();
+  await startCamera(facingMode);
+  document.getElementById('camToggle').disabled = false;
   requestAnimationFrame(processFrame);
+});
+
+document.getElementById('camToggle').addEventListener('click', async () => {
+  const btn = document.getElementById('camToggle');
+  btn.disabled = true;
+  btn.textContent = 'SWITCHING...';
+  facingMode = facingMode === 'user' ? 'environment' : 'user';
+  await startCamera(facingMode);
+  btn.textContent = facingMode === 'user' ? '⇄ REAR CAM' : '⇄ FRONT CAM';
+  btn.disabled = false;
 });
 
 async function processFrame(){
@@ -156,6 +206,7 @@ async function processFrame(){
 
 document.querySelectorAll('.cBtn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if(btn.id === 'camToggle') return;
     document.querySelectorAll('.cBtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     costume = btn.dataset.costume;
@@ -164,38 +215,38 @@ document.querySelectorAll('.cBtn').forEach(btn => {
 });
 
 function getEulerAngles(lms) {
-  const nose = P(lms, 4);
-  const leftT = P(lms, 234); 
-  const rightT = P(lms, 454); 
-  
-// Before — direction runs right-of-screen → left-of-screen, giving roll ≈ π
-const dx = rightT.x - leftT.x;
-const dy = rightT.y - leftT.y;
-const dz = rightT.z - leftT.z;
+  const nose   = P(lms, 4);
+  const leftT  = P(lms, 234);
+  const rightT = P(lms, 454);
 
-// After — direction runs left-of-screen → right-of-screen, giving roll ≈ 0 for an upright face
-const dx = leftT.x - rightT.x;
-const dy = leftT.y - rightT.y;
-const dz = leftT.z - rightT.z;
-  
+  // FIX 5: direction vector must run from visual-left → visual-right on the
+  // mirrored canvas. After P() mirrors x, landmark 454 sits on the left of the
+  // screen and 234 on the right, so the subtraction order is reversed.
+  const dx = leftT.x - rightT.x;
+  const dy = leftT.y - rightT.y;
+  const dz = leftT.z - rightT.z;
+
   const roll = Math.atan2(dy, dx);
-  const yaw = Math.asin(dz / Math.hypot(dx, dy, dz));
-  
+  const yaw  = Math.asin(dz / Math.hypot(dx, dy, dz));
+
   const midX = (leftT.x + rightT.x) / 2;
   const midY = (leftT.y + rightT.y) / 2;
   const midZ = (leftT.z + rightT.z) / 2;
-  const pitch = Math.atan2(nose.y - midY, nose.z - midZ) + Math.PI; 
-  
+  const pitch = Math.atan2(nose.y - midY, nose.z - midZ) + Math.PI;
+
   return { roll, pitch: pitch * 0.1, yaw };
 }
+
+// Kimijima report scroll position
+let reportY = 0;
 
 function onResults(res){
   if(!ready) { ready = true; loadEl.style.display = 'none'; }
   const W = canvas.width, H = canvas.height;
-  
+
   ctx.save();
   ctx.clearRect(0, 0, W, H);
-  
+
   if(mirrorX){
     ctx.save(); ctx.translate(W, 0); ctx.scale(-1, 1);
     ctx.drawImage(res.image, 0, 0, W, H); ctx.restore();
@@ -215,19 +266,22 @@ function onResults(res){
     ctx.fillRect(0,0,W,H);
   }
 
+  // FIX 1: index into [0] to get the first face's landmark array.
+  // res.multiFaceLandmarks is an array of faces; without [0], lms[i] returns
+  // undefined for any i > 0, crashing the render loop immediately.
   if(res.multiFaceLandmarks && res.multiFaceLandmarks.length > 0){
     const lms = res.multiFaceLandmarks[0];
     const euler = getEulerAngles(lms);
     const fw = Math.hypot(P(lms,234).x - P(lms,454).x, P(lms,234).y - P(lms,454).y);
-    
-    if(costume === 'catgirl') drawCatGirl(lms, fw, euler);
+
+    if(costume === 'catgirl')   drawCatGirl(lms, fw, euler);
     else if(costume === 'gunvarrel') drawGunvarrel(lms, fw, euler);
-    else if(costume === 'geeks') drawFrauGeeks(lms, fw, euler);
+    else if(costume === 'geeks')     drawFrauGeeks(lms, fw, euler);
   }
 
   if(costume === 'system') drawKimijimaReport(W, H);
-  if(costume === 'geeks') updateParticles();
-  
+  if(costume === 'geeks')  updateParticles();
+
   ctx.restore();
   frame++;
 }
@@ -236,19 +290,19 @@ function onResults(res){
 // 1. NEKOMIMI (Cat Girl)
 // ----------------------------------------------------
 function drawCatGirl(lms, fw, euler){
-  const brow = P(lms, 10);
+  const brow     = P(lms, 10);
   const leftTemp = P(lms, 103);
-  const rightTemp = P(lms, 332);
-  const scale = fw / 200;
+  const rightTemp= P(lms, 332);
+  const scale    = fw / 200;
 
   ctx.save();
   ctx.translate(brow.x, brow.y);
   ctx.rotate(euler.roll);
 
   // Structural HUD Tag
-  ctx.fillStyle = 'rgba(0, 20, 30, 0.7)';
+  ctx.fillStyle   = 'rgba(0, 20, 30, 0.7)';
   ctx.strokeStyle = '#7fe8ff';
-  ctx.lineWidth = 1;
+  ctx.lineWidth   = 1;
   ctx.beginPath();
   ctx.rect(fw*0.6, -fw*0.5, 160*scale, 40*scale);
   ctx.fill(); ctx.stroke();
@@ -262,23 +316,23 @@ function drawCatGirl(lms, fw, euler){
     ctx.save();
     ctx.translate(sign * fw * 0.35, -fw * 0.2);
     ctx.rotate(sign * 0.3 + euler.yaw * sign);
-    
+
     // Outer Ear
     const eg = ctx.createLinearGradient(0, -fw*0.6, 0, fw*0.2);
     eg.addColorStop(0, '#ffffff');
     eg.addColorStop(1, '#ffb6c1');
     ctx.fillStyle = eg;
-    
+
     ctx.beginPath();
-    ctx.moveTo(0, -fw*0.6); // Tip
-    ctx.bezierCurveTo(fw*0.15, -fw*0.3, fw*0.25, 0, fw*0.2, fw*0.2); // Outer edge
-    ctx.lineTo(-fw*0.2, fw*0.2); // Base
-    ctx.bezierCurveTo(-fw*0.15, 0, -fw*0.05, -fw*0.3, 0, -fw*0.6); // Inner edge
+    ctx.moveTo(0, -fw*0.6);
+    ctx.bezierCurveTo(fw*0.15, -fw*0.3, fw*0.25, 0, fw*0.2, fw*0.2);
+    ctx.lineTo(-fw*0.2, fw*0.2);
+    ctx.bezierCurveTo(-fw*0.15, 0, -fw*0.05, -fw*0.3, 0, -fw*0.6);
     ctx.fill();
 
     // Inner Cavity (Auditory Shadow)
     const ig = ctx.createRadialGradient(0, 0, 1, 0, 0, fw*0.4);
-    ig.addColorStop(0, 'rgba(216,191,216, 0.8)'); // Mauve
+    ig.addColorStop(0, 'rgba(216,191,216, 0.8)');
     ig.addColorStop(1, 'rgba(216,191,216, 0)');
     ctx.fillStyle = ig;
     ctx.beginPath();
@@ -300,13 +354,13 @@ function drawCatGirl(lms, fw, euler){
 // 2. GUNVARREL (Mecha Helmet)
 // ----------------------------------------------------
 function drawGunvarrel(lms, fw, euler){
-  const nose = P(lms, 4);
+  const nose  = P(lms, 4);
   const scale = fw / 150;
 
   ctx.save();
   ctx.translate(nose.x, nose.y - fw*0.1);
   ctx.rotate(euler.roll);
-  
+
   // Transform for 3D projection
   ctx.transform(1, 0, 0, Math.cos(euler.pitch), 0, 0);
 
@@ -335,25 +389,25 @@ function drawGunvarrel(lms, fw, euler){
   function drawEye(sign) {
     ctx.save();
     ctx.translate(sign * fw * 0.25, -fw*0.05);
-    
+
     // Socket
     ctx.fillStyle = '#111';
     ctx.beginPath();
     ctx.moveTo(sign * -fw*0.15, -fw*0.1);
-    ctx.lineTo(sign * fw*0.2, -fw*0.15);
-    ctx.lineTo(sign * fw*0.15, fw*0.05);
-    ctx.lineTo(sign * -fw*0.1, 0);
+    ctx.lineTo(sign *  fw*0.2,  -fw*0.15);
+    ctx.lineTo(sign *  fw*0.15,  fw*0.05);
+    ctx.lineTo(sign * -fw*0.1,   0);
     ctx.fill();
 
     // LED Glow
     ctx.shadowColor = '#ffff00';
-    ctx.shadowBlur = 20 * scale;
-    ctx.fillStyle = '#ffffaa';
+    ctx.shadowBlur  = 20 * scale;
+    ctx.fillStyle   = '#ffffaa';
     ctx.beginPath();
-    ctx.moveTo(sign * -fw*0.1, -fw*0.05);
-    ctx.lineTo(sign * fw*0.15, -fw*0.1);
-    ctx.lineTo(sign * fw*0.1, fw*0.02);
-    ctx.lineTo(sign * -fw*0.05, 0);
+    ctx.moveTo(sign * -fw*0.1,  -fw*0.05);
+    ctx.lineTo(sign *  fw*0.15, -fw*0.1);
+    ctx.lineTo(sign *  fw*0.1,   fw*0.02);
+    ctx.lineTo(sign * -fw*0.05,  0);
     ctx.fill();
     ctx.restore();
   }
@@ -361,8 +415,8 @@ function drawGunvarrel(lms, fw, euler){
 
   // Golden V-Fin Antenna
   ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 10;
-  ctx.fillStyle = '#ffd700';
+  ctx.shadowBlur  = 10;
+  ctx.fillStyle   = '#ffd700';
   ctx.beginPath();
   ctx.moveTo(0, -fw*0.25);
   ctx.lineTo(-fw*0.5, -fw*0.6);
@@ -375,7 +429,7 @@ function drawGunvarrel(lms, fw, euler){
   // Targeting Reticle
   ctx.rotate(frame * 0.05);
   ctx.strokeStyle = '#00ff00';
-  ctx.lineWidth = 2;
+  ctx.lineWidth   = 2;
   ctx.beginPath(); ctx.arc(0, 0, fw*0.15, 0, Math.PI*2); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(-fw*0.2, 0); ctx.lineTo(fw*0.2, 0); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(0, -fw*0.2); ctx.lineTo(0, fw*0.2); ctx.stroke();
@@ -387,12 +441,12 @@ function drawGunvarrel(lms, fw, euler){
 // 3. GEEKS (Frau Koujiro Digital Aura)
 // ----------------------------------------------------
 function drawFrauGeeks(lms, fw, euler){
-  const leftEye = P(lms, 33);
+  const leftEye  = P(lms, 33);
   const rightEye = P(lms, 263);
-  const nose = P(lms, 4);
-  const scale = fw / 150;
+  const nose     = P(lms, 4);
+  const scale    = fw / 150;
 
-  // Add particles
+  // Add particles (FIX 2: particles is now a proper array)
   if(Math.random() < 0.15) {
     particles.push({
       text: frauQuotes[Math.floor(Math.random() * frauQuotes.length)],
@@ -410,7 +464,7 @@ function drawFrauGeeks(lms, fw, euler){
   ctx.rotate(euler.roll);
 
   ctx.shadowBlur = 15;
-  
+
   // Shift Red
   ctx.shadowColor = '#ff0000'; ctx.strokeStyle = 'rgba(255,0,0,0.8)';
   drawRetroGlasses(fw, scale, -2);
@@ -419,7 +473,7 @@ function drawFrauGeeks(lms, fw, euler){
   drawRetroGlasses(fw, scale, 2);
   // Main Green
   ctx.shadowColor = '#00ff00'; ctx.strokeStyle = '#00ff00';
-  ctx.lineWidth = 3 * scale;
+  ctx.lineWidth   = 3 * scale;
   drawRetroGlasses(fw, scale, 0);
 
   ctx.restore();
@@ -436,7 +490,7 @@ function drawFrauGeeks(lms, fw, euler){
 function drawRetroGlasses(fw, scale, xOff) {
   ctx.beginPath();
   ctx.rect(-fw*0.45 + xOff, -fw*0.15, fw*0.4, fw*0.2); // Left lens
-  ctx.rect(fw*0.05 + xOff, -fw*0.15, fw*0.4, fw*0.2);  // Right lens
+  ctx.rect( fw*0.05 + xOff, -fw*0.15, fw*0.4, fw*0.2); // Right lens
   ctx.moveTo(-fw*0.05 + xOff, -fw*0.05); ctx.lineTo(fw*0.05 + xOff, -fw*0.05); // Bridge
   ctx.stroke();
 }
@@ -448,10 +502,10 @@ function updateParticles() {
     p.y += p.vy;
     p.x += Math.sin(frame * 0.1 + p.life) * 0.5;
     p.life--;
-    
+
     ctx.fillStyle = `rgba(0, 255, 0, ${p.life / p.maxLife})`;
     ctx.fillText(p.text, p.x, p.y);
-    
+
     if(p.life <= 0) particles.splice(i, 1);
   }
 }
@@ -461,21 +515,20 @@ function updateParticles() {
 // ----------------------------------------------------
 function drawKimijimaReport(W, H) {
   const cx = W / 2, cy = H / 2;
-  
+
   // Pulsing Alpha
   const pulseAlpha = 0.5 + 0.5 * Math.sin(performance.now() / 200);
 
   // Procedural Redacted Text
-  ctx.font = "10px 'Share Tech Mono'";
+  ctx.font      = "10px 'Share Tech Mono'";
   ctx.fillStyle = `rgba(255, 50, 50, 0.6)`;
   reportY -= 1;
   if(reportY < -reportLines.length * 20) reportY = H;
 
-  for(let i=0; i<reportLines.length; i++) {
+  for(let i = 0; i < reportLines.length; i++) {
     let text = reportLines[i];
-    // Redaction logic
     if(Math.random() < 0.1) text = text.replace(/[a-zA-Z]/g, '█');
-    ctx.fillText(text, 40, reportY + (i * 20));
+    ctx.fillText(text, 40,       reportY + (i * 20));
     ctx.fillText(text, W/2 + 40, reportY + (i * 20) - H/2);
   }
 
@@ -483,10 +536,10 @@ function drawKimijimaReport(W, H) {
   ctx.save();
   ctx.translate(cx, cy);
   ctx.shadowColor = '#ff0000';
-  ctx.shadowBlur = 30 * pulseAlpha;
+  ctx.shadowBlur  = 30 * pulseAlpha;
   ctx.strokeStyle = `rgba(255, 0, 0, ${pulseAlpha})`;
-  ctx.lineWidth = 12;
-  ctx.lineCap = 'round';
+  ctx.lineWidth   = 12;
+  ctx.lineCap     = 'round';
 
   ctx.beginPath();
   ctx.arc(0, 0, 80, -Math.PI * 0.35, Math.PI * 1.35);
@@ -497,12 +550,12 @@ function drawKimijimaReport(W, H) {
   ctx.lineTo(0, -90);
   ctx.stroke();
 
-  ctx.font = "bold 24px 'Share Tech Mono'";
+  ctx.font      = "bold 24px 'Share Tech Mono'";
   ctx.textAlign = "center";
+  ctx.fillStyle = `rgba(255, 50, 50, ${pulseAlpha})`;
   ctx.fillText("WARNING: SYSTEM CORRUPTION", 0, 140);
   ctx.restore();
 }
-
 </script>
 </body>
 </html>
